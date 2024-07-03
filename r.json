@@ -1,0 +1,69 @@
+{
+    "data": {
+        "series": [
+            [
+                14767562
+            ]
+        ],
+        "seriesCollapsed": [
+            [
+                {
+                    "setId": "",
+                    "value": 14767562
+                }
+            ]
+        ],
+        "seriesLabels": [
+            0
+        ],
+        "xValues": [
+            "2024-06-16"
+        ]
+    },
+    "timeComputed": 1718730256938,
+    "wasCached": false,
+    "cacheFreshness": "FRESH",
+    "novaRuntime": 900,
+    "novaRequestDuration": 935,
+    "novaCost": 20,
+    "throttleTime": 2,
+    "minSampleRate": 1,
+    "transformationIds": [],
+    "backend": "novaV2",
+    "realtimeDataMissing": false,
+    "timedOutRealtimeData": false,
+    "missedCacheAndNotComputed": false,
+    "partialMergedAndNewUserInformation": false,
+    "prunedResult": false,
+    "hitChunkGroupByLimit": false,
+    "subcluster": 9,
+    "millisSinceComputed": 370,
+    "earliestServerReceivedTime": 9223372036854776000,
+    "queryIds": [
+        "UIdZ63L1mL"
+    ],
+    "novaRequestStartAndEndTimes": [
+        [
+            1718730256022,
+            1718730256957
+        ]
+    ],
+    "perQueryMetadata": [
+        {
+            "queryId": "UIdZ63L1mL",
+            "queryType": "MULTI_SEGMENTATION",
+            "cached": false,
+            "cacheFreshness": "FRESH",
+            "throttleTime": 2,
+            "novaCost": 20,
+            "minSampleRate": 1,
+            "realtimeDataMissing": false,
+            "externalDataMissing": false,
+            "timedOutRealtime": false,
+            "missedCacheAndNotComputed": false,
+            "prunedResult": false,
+            "hitChunkGroupByLimit": false
+        }
+    ],
+    "prunedAmpIds": []
+}

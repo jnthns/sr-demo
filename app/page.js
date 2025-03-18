@@ -7,135 +7,186 @@ import Amplitude from "../lib/amplitude"
 
 export default function Home() {
   useEffect(() => {
-    const handleClick = (event) => {
-      const card = event.currentTarget;
-      const title = card.querySelector('.card-title').textContent;
-      const content = card.querySelector('.card-text').textContent;
-      logEvent("Card Clicked", { title: title, content: content });
-    };
+  // 3/2025: replacing with autocapture
+  //   // Track card clicks
+  //   const handleCardClick = (event) => {
+  //     const card = event.currentTarget;
+  //     const title = card.querySelector('.card-title').textContent;
+  //     const content = card.querySelector('.card-text').textContent;
+  //     logEvent("Card Clicked", { title: title, content: content });
+  //   };
 
-    const cards = document.querySelectorAll('.card');
-    cards.forEach(card => {
-      card.addEventListener('click', handleClick);
-    });
+  //   const handleButtonClick = (event) => {
+  //     logEvent("Form Submitted", { buttonText: event.target.id });
+  //   };
 
-    return () => {
-      cards.forEach(card => {
-        card.removeEventListener('click', handleClick);
-      });
-    };
+  //   const handleInputBlur = (event) => {
+  //     logEvent("Form Input Entered", { field: event.target.name, value: event.target.value });
+  //   };
+    
+  //   const cards = document.querySelectorAll('.card');
+  //   cards.forEach(card => {
+  //     card.addEventListener('click', handleCardClick);
+  //   });
+
+  //   const buttons = document.querySelectorAll('button');
+  //   buttons.forEach(button => {
+  //     button.addEventListener('click', handleButtonClick);
+  //   });
+
+  //  const inputs = document.querySelectorAll('input, textarea');
+  //  inputs.forEach(input => {
+  //    input.addEventListener('blur', handleInputBlur);
+  //  });
+
+  //   return () => {
+  //     cards.forEach(card => {
+  //       card.removeEventListener('click', handleCardClick);
+  //     });
+  //     buttons.forEach(button => {
+  //       button.removeEventListener('click', handleButtonClick);
+  //     });
+  //     inputs.forEach(input => {
+  //       input.removeEventListener('blur', handleInputBlur);
+  //     });
+    // };
   }, []);
 
   return (
     <>
-    <Amplitude />
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+      <Amplitude />
+      <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
+          <p className="amp-unmask fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
+            This is unmasked.
+          </p>
         </div>
-      </div>
+        <br />
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/ampl.png"
-          alt="Amplitude Logo"
-          width={400}
-          height={80}
-          priority
-        />
-      </div>
-      
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group card rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold card-title">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50 card-text">
-            Find in-depth information about Amplitude features and API.
+        {/* New Form Section */}
+        <div className="w-full max-w-3xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
+          <h2 className="text-2xl font-semibold mb-3">Example Form</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Duis sollicitudin, 
+            nunc sit amet hendrerit volutpat, nisi nunc varius lacus, a pharetra felis lacus et eros.
           </p>
-        </a>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group card rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold card-title">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50 card-text">
-            Learn about Amplitude in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+          {/* Row of Buttons */}
+          <div className="flex justify-center gap-4 mb-6">
+            <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition">
+              Button 1
+            </button>
+            <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition">
+              Button 2
+            </button>
+            <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">
+              Button 3
+            </button>
+          </div>
 
-        <a
-          href="https://vercel.com/templates?framework=Amplitude&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group card rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold card-title">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50 card-text">
-            Explore starter templates for Amplitude.
-          </p>
-        </a>
+          <div className="mb-4">
+            <ul className="list-disc list-inside text-blue-500 dark:text-blue-400">
+              <li>
+                <a href="https://www.amplitude.com/docs/session-replay" target="_blank" rel="noopener noreferrer">
+                  Amplitude Session Replay 
+                </a>
+              </li>
+              <li>
+                <a href="https://www.amplitude.com" target="_blank" rel="noopener noreferrer">
+                  Example Link
+                </a>
+              </li>
+            </ul>
+          </div>
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group card rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold card-title">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50 card-text">
-            Instantly deploy your Amplitude site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  </>
-  );
+          <form className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                placeholder="Enter your name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                placeholder="Enter your phone number"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="credit-card" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Credit Card Number
+              </label>
+              <input
+                type="tel"
+                id="credit-card"
+                name="creditCard"
+                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                placeholder="Enter your credit card number"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                placeholder="Enter your password"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Message
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                rows="4"
+                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                placeholder="Enter your message"
+              ></textarea>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition"
+            >
+              Submit
+            </button>
+          </form>
+        </div>
+      </main>
+    </>
+  )
 }

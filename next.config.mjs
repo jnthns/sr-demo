@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-   images: {unoptimized: true},
-   output: 'export'
-};
-
-export default nextConfig;
+   output: 'export',  
+   images: {
+     unoptimized: true, 
+   },
+   basePath: "/sr-demo", 
+   assetPrefix: "/sr-demo/",
+ };
+ 
+ module.exports = nextConfig;
+ 

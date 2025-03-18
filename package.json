@@ -2,12 +2,14 @@
   "name": "my-next-app",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://jnthns.github.io/sr-demo",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "gh-pages -d out"
+    "deploy": "gh-pages -d out",
+    "export": "next build && next export"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.12.0",

@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect } from "react";
-import { logEvent, trackExposure, analytics } from "../lib/amplitude"
+import { logEvent, trackExposure, trackPage } from "../lib/amplitude"
 import AnalyticsProvider from "../lib/amplitude"
 
 export default function Home() {
   useEffect(() => {
     // Track page view
-    analytics.page("Home Page", {
+    trackPage("Home Page", {
       path: window.location.pathname,
       url: window.location.href,
       title: document.title
@@ -51,12 +51,19 @@ export default function Home() {
     };
 
     const handleInputBlur = (event) => {
-      logEvent("Form Input Entered", { 
-        field: event.target.name,
-        field_type: event.target.type,
-        value: event.target.type === 'password' ? '[REDACTED]' : event.target.value,
-        label: event.target.labels?.[0]?.textContent?.trim()
-      });
+      const input = event.target;
+      const value = input.value.trim();
+      
+      // Only track if the input has a value and is valid
+      if (value && input.checkValidity()) {
+        logEvent("Form Input Entered", { 
+          field: input.name,
+          field_type: input.type,
+          value: input.type === 'password' ? '[REDACTED]' : value,
+          label: input.labels?.[0]?.textContent?.trim(),
+          is_valid: true
+        });
+      }
     };
     
     const handleFormSubmit = (event) => {

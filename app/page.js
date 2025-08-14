@@ -1,60 +1,121 @@
 'use client'
 
 import { useEffect } from "react";
-import Image from "next/image";
-import { logEvent } from "../lib/amplitude"
-import Amplitude from "../lib/amplitude"
+import { logEvent, trackExposure, analytics } from "../lib/amplitude"
+import AnalyticsProvider from "../lib/amplitude"
 
 export default function Home() {
   useEffect(() => {
-  // 3/2025: replacing with autocapture
-  //   // Track card clicks
-  //   const handleCardClick = (event) => {
-  //     const card = event.currentTarget;
-  //     const title = card.querySelector('.card-title').textContent;
-  //     const content = card.querySelector('.card-text').textContent;
-  //     logEvent("Card Clicked", { title: title, content: content });
-  //   };
+    // Track page view
+    analytics.page("Home Page", {
+      path: window.location.pathname,
+      url: window.location.href,
+      title: document.title
+    });
 
-  //   const handleButtonClick = (event) => {
-  //     logEvent("Form Submitted", { buttonText: event.target.id });
-  //   };
+    // Track card clicks
+    const handleCardClick = (event) => {
+      const card = event.currentTarget;
+      const title = card.querySelector('.card-title').textContent;
+      const content = card.querySelector('.card-text').textContent;
+      logEvent("Card Clicked", { title: title, content: content });
+    };
 
-  //   const handleInputBlur = (event) => {
-  //     logEvent("Form Input Entered", { field: event.target.name, value: event.target.value });
-  //   };
+    const handleButtonClick = (event) => {
+      const button = event.target;
+      const buttonText = button.textContent.trim();
+      const buttonType = button.type || 'button';
+      const buttonId = button.id || '';
+      const isFormSubmit = buttonType === 'submit';
+      
+      logEvent("Button Clicked", {
+        button_text: buttonText,
+        button_id: buttonId,
+        button_type: buttonType,
+        is_submit: isFormSubmit,
+        button_class: button.className,
+        form_id: button.form?.id || ''
+      });
+
+      if (buttonId === 'track-exposure-btn') {
+        trackExposure()
+      }
+    };
+
+    const handleInputFocus = (event) => {
+      logEvent("Form Field Focused", { 
+        field: event.target.name,
+        field_type: event.target.type,
+        label: event.target.labels?.[0]?.textContent?.trim()
+      });
+    };
+
+    const handleInputBlur = (event) => {
+      logEvent("Form Input Entered", { 
+        field: event.target.name,
+        field_type: event.target.type,
+        value: event.target.type === 'password' ? '[REDACTED]' : event.target.value,
+        label: event.target.labels?.[0]?.textContent?.trim()
+      });
+    };
     
-  //   const cards = document.querySelectorAll('.card');
-  //   cards.forEach(card => {
-  //     card.addEventListener('click', handleCardClick);
-  //   });
+    const handleFormSubmit = (event) => {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const formFields = {};
+      formData.forEach((value, key) => {
+        formFields[key] = key.includes('password') || key.includes('credit') ? '[REDACTED]' : value;
+      });
+      
+      logEvent("Form Submitted", {
+        form_id: event.target.id || 'main-form',
+        fields: formFields
+      });
+    };
+    
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+      card.addEventListener('click', handleCardClick);
+    });
 
-  //   const buttons = document.querySelectorAll('button');
-  //   buttons.forEach(button => {
-  //     button.addEventListener('click', handleButtonClick);
-  //   });
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.addEventListener('click', handleButtonClick);
+    });
 
-  //  const inputs = document.querySelectorAll('input, textarea');
-  //  inputs.forEach(input => {
-  //    input.addEventListener('blur', handleInputBlur);
-  //  });
+   const inputs = document.querySelectorAll('input, textarea');
+   inputs.forEach(input => {
+     input.addEventListener('focus', handleInputFocus);
+     input.addEventListener('blur', handleInputBlur);
+   });
 
-  //   return () => {
-  //     cards.forEach(card => {
-  //       card.removeEventListener('click', handleCardClick);
-  //     });
-  //     buttons.forEach(button => {
-  //       button.removeEventListener('click', handleButtonClick);
-  //     });
-  //     inputs.forEach(input => {
-  //       input.removeEventListener('blur', handleInputBlur);
-  //     });
-    // };
+   const form = document.querySelector('form');
+   if (form) {
+     form.addEventListener('submit', handleFormSubmit);
+   }
+
+    return () => {
+      cards.forEach(card => {
+        card.removeEventListener('click', handleCardClick);
+      });
+      buttons.forEach(button => {
+        button.removeEventListener('click', handleButtonClick);
+      });
+      inputs.forEach(input => {
+        input.removeEventListener('focus', handleInputFocus);
+        input.removeEventListener('blur', handleInputBlur);
+      });
+
+      const form = document.querySelector('form');
+      if (form) {
+        form.removeEventListener('submit', handleFormSubmit);
+      }
+    };
   }, []);
 
   return (
     <>
-      <Amplitude />
+      <AnalyticsProvider />
       <main className="flex min-h-screen flex-col items-center justify-between p-24">
         <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
           <p className="amp-unmask fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
@@ -73,8 +134,11 @@ export default function Home() {
 
           {/* Row of Buttons */}
           <div className="flex justify-center gap-4 mb-6">
-            <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition">
-              Button 1
+            <button
+              id="track-exposure-btn"
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition"
+            >
+              Track Exposure
             </button>
             <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition">
               Button 2

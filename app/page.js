@@ -38,6 +38,7 @@ export default function Home() {
       });
 
       if (buttonId === 'track-exposure-btn') {
+        console.log("Tracking exposure");
         trackExposure()
       }
     };

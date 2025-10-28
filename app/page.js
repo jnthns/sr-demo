@@ -135,17 +135,33 @@ const Page1 = () => (
 const Page2 = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (input.trim()) {
       const newMessages = [...messages, { text: input, sender: 'user' }];
       setMessages(newMessages);
       setInput('');
+      setIsLoading(true);
       logEvent('Chatbot Message Sent', { message: input });
 
-      setTimeout(() => {
-        setMessages([...newMessages, { text: 'This is a mocked response.', sender: 'bot' }]);
-      }, 1000);
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: input }),
+        });
+
+        const data = await response.json();
+        setMessages([...newMessages, { text: data.response, sender: 'bot' }]);
+      } catch (error) {
+        console.error('Error fetching chatbot response:', error);
+        setMessages([...newMessages, { text: 'Sorry, something went wrong.', sender: 'bot' }]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -158,6 +174,7 @@ const Page2 = () => {
             {msg.text}
           </div>
         ))}
+        {isLoading && <div className="p-2 rounded-lg mb-2 bg-gray-300 dark:bg-zinc-600 self-start">Thinking...</div>}
       </div>
       <div className="flex">
         <input
@@ -167,12 +184,14 @@ const Page2 = () => {
           onKeyPress={(e) => e.key === 'Enter' && handleSend()}
           className="flex-grow rounded-l-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
           placeholder="Type your message..."
+          disabled={isLoading}
         />
         <button
           onClick={handleSend}
           className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r-md transition"
+          disabled={isLoading}
         >
-          Send
+          {isLoading ? '...' : 'Send'}
         </button>
       </div>
     </div>

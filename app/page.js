@@ -186,13 +186,17 @@ const Page3 = () => {
   const handleSliderChange = (e) => {
     const value = e.target.value;
     setSliderValue(value);
-    logEvent('Slider Interacted', { value });
+  };
+
+  const handleSliderEnd = (e) => {
+    const value = e.target.value;
+    logEvent('Slider Value Set', { final_value: value });
   };
 
   const handleToggle = () => {
     const newValue = !toggleOn;
     setToggleOn(newValue);
-    logEvent('Toggle Interacted', { on: newValue });
+    logEvent('Toggle Set', { on: newValue });
   };
 
   return (
@@ -203,16 +207,18 @@ const Page3 = () => {
           <label htmlFor="slider" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Slider
           </label>
-          <input
-            type="range"
-            id="slider"
-            name="slider"
-            min="0"
-            max="100"
-            value={sliderValue}
-            onChange={handleSliderChange}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-          />
+           <input
+             type="range"
+             id="slider"
+             name="slider"
+             min="0"
+             max="100"
+             value={sliderValue}
+             onChange={handleSliderChange}
+             onMouseUp={handleSliderEnd}
+             onTouchEnd={handleSliderEnd}
+             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+           />
           <p className="text-center text-gray-600 dark:text-gray-400 mt-2">Value: {sliderValue}</p>
         </div>
         <div className="flex items-center justify-between">

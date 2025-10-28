@@ -132,19 +132,100 @@ const Page1 = () => (
   </div>
 );
 
-const Page2 = () => (
-  <div className="w-full max-w-3xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
-    <h2 className="text-2xl font-semibold mb-3">Page 2</h2>
-    <p className="text-gray-600 dark:text-gray-400">This is the second page.</p>
-  </div>
-);
+const Page2 = () => {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
 
-const Page3 = () => (
-  <div className="w-full max-w-3xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
-    <h2 className="text-2xl font-semibold mb-3">Page 3</h2>
-    <p className="text-gray-600 dark:text-gray-400">This is the third page.</p>
-  </div>
-);
+  const handleSend = () => {
+    if (input.trim()) {
+      const newMessages = [...messages, { text: input, sender: 'user' }];
+      setMessages(newMessages);
+      setInput('');
+      logEvent('Chatbot Message Sent', { message: input });
+
+      setTimeout(() => {
+        setMessages([...newMessages, { text: 'This is a mocked response.', sender: 'bot' }]);
+      }, 1000);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-3xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
+      <h2 className="text-2xl font-semibold mb-3">Chatbot</h2>
+      <div className="flex flex-col h-80 bg-gray-100 dark:bg-zinc-700 p-4 rounded-lg overflow-y-auto mb-4">
+        {messages.map((msg, index) => (
+          <div key={index} className={`p-2 rounded-lg mb-2 ${msg.sender === 'user' ? 'bg-blue-500 text-white self-end' : 'bg-gray-300 dark:bg-zinc-600 self-start'}`}>
+            {msg.text}
+          </div>
+        ))}
+      </div>
+      <div className="flex">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+          className="flex-grow rounded-l-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+          placeholder="Type your message..."
+        />
+        <button
+          onClick={handleSend}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r-md transition"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const Page3 = () => {
+  const [sliderValue, setSliderValue] = useState(50);
+  const [toggleOn, setToggleOn] = useState(false);
+
+  const handleSliderChange = (e) => {
+    const value = e.target.value;
+    setSliderValue(value);
+    logEvent('Slider Interacted', { value });
+  };
+
+  const handleToggle = () => {
+    const newValue = !toggleOn;
+    setToggleOn(newValue);
+    logEvent('Toggle Interacted', { on: newValue });
+  };
+
+  return (
+    <div className="w-full max-w-3xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
+      <h2 className="text-2xl font-semibold mb-3">Interactive Elements</h2>
+      <div className="space-y-6">
+        <div>
+          <label htmlFor="slider" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Slider
+          </label>
+          <input
+            type="range"
+            id="slider"
+            name="slider"
+            min="0"
+            max="100"
+            value={sliderValue}
+            onChange={handleSliderChange}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+          />
+          <p className="text-center text-gray-600 dark:text-gray-400 mt-2">Value: {sliderValue}</p>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Toggle Switch</span>
+          <label htmlFor="toggle" className="inline-flex relative items-center cursor-pointer">
+            <input type="checkbox" id="toggle" className="sr-only peer" checked={toggleOn} onChange={handleToggle} />
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function Home() {
   const [page, setPage] = useState(1);
@@ -268,26 +349,32 @@ export default function Home() {
         </div>
         <br />
 
+        <div className="w-full max-w-3xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => setPage(1)}
+              className={`font-bold py-2 px-4 rounded-lg transition ${page === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-zinc-700'}`}
+            >
+              Page 1
+            </button>
+            <button
+              onClick={() => setPage(2)}
+              className={`font-bold py-2 px-4 rounded-lg transition ${page === 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-zinc-700'}`}
+            >
+              Page 2
+            </button>
+            <button
+              onClick={() => setPage(3)}
+              className={`font-bold py-2 px-4 rounded-lg transition ${page === 3 ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-zinc-700'}`}
+            >
+              Page 3
+            </button>
+          </div>
+        </div>
+
         {page === 1 && <Page1 />}
         {page === 2 && <Page2 />}
         {page === 3 && <Page3 />}
-
-        <div className="flex justify-center gap-4 mt-6">
-          <button
-            onClick={() => setPage(page - 1)}
-            disabled={page === 1}
-            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => setPage(page + 1)}
-            disabled={page === 3}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
       </main>
     </>
   )

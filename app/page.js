@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from "react";
-import { logEvent, trackExposure, trackPage } from "../lib/amplitude"
+import { logEvent, trackExposure, trackPage, setUserID } from "../lib/amplitude"
 import AnalyticsProvider from "../lib/amplitude"
 
 export default function Home() {
@@ -74,6 +74,15 @@ export default function Home() {
       formData.forEach((value, key) => {
         formFields[key] = key.includes('password') || key.includes('credit') ? '[REDACTED]' : value;
       });
+      
+      // Check if user entered a name (User ID) and set it in Amplitude
+      const userName = formData.get('name');
+      if (userName && userName.trim()) {
+        setUserID(userName.trim());
+        // Reload the page after setting user ID
+        window.location.reload();
+        return;
+      }
       
       logEvent("Form Submitted", {
         form_id: event.target.id || 'main-form',
@@ -164,8 +173,8 @@ export default function Home() {
                 </a>
               </li>
               <li>
-                <a href="https://www.amplitude.com" target="_blank" rel="noopener noreferrer">
-                  Example Link
+                <a href="http://localhost:3000?user_id={{property.user_id}}&device_id={{property.device_id}}" target="_blank" rel="noopener noreferrer">
+                  User ID/Device ID Interpolation Link
                 </a>
               </li>
             </ul>
@@ -174,7 +183,7 @@ export default function Home() {
           <form className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Name
+                User ID
               </label>
               <input
                 type="text"

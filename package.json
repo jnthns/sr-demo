@@ -16,7 +16,7 @@
     "@amplitude/experiment-js-client": "^1.15.6",
     "@amplitude/session-replay-browser": "^1.22.3",
     "@amplitude/unified": "^1.0.0-beta.2",
-    "@google/generative-ai": "^0.24.1",
+    "@google/genai": "^1.27.0",
     "@segment/analytics-next": "^1.81.1",
     "dexie": "^4.0.7",
     "fake-indexeddb": "^6.0.0",

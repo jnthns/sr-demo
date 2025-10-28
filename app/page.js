@@ -136,227 +136,63 @@ const Page2 = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Initialize with welcome message and load saved messages
-  useEffect(() => {
-    const savedMessages = localStorage.getItem('chatbot-messages');
-    if (savedMessages) {
-      try {
-        const parsedMessages = JSON.parse(savedMessages).map(msg => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }));
-        setMessages(parsedMessages);
-      } catch (error) {
-        console.error('Error loading saved messages:', error);
-        setMessages([{
-          text: "Hello! I'm your AI assistant. How can I help you today?",
-          sender: 'bot',
-          timestamp: new Date()
-        }]);
-      }
-    } else {
-      setMessages([{
-        text: "Hello! I'm your AI assistant. How can I help you today?",
-        sender: 'bot',
-        timestamp: new Date()
-      }]);
-    }
-  }, []);
-
-  // Save messages to localStorage whenever messages change
-  useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('chatbot-messages', JSON.stringify(messages));
-    }
-  }, [messages]);
 
   const handleSend = async () => {
-    const messageText = input.trim();
-    if (!messageText) return;
+    if (input.trim()) {
+      const newMessages = [...messages, { text: input, sender: 'user' }];
+      setMessages(newMessages);
+      setInput('');
+      setIsLoading(true);
+      logEvent('Chatbot Message Sent', { message: input });
 
-    const userMessage = {
-      text: messageText,
-      sender: 'user',
-      timestamp: new Date()
-    };
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: input }),
+        });
 
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-    setInput('');
-    setIsLoading(true);
-    setError(null);
-    
-    logEvent('Chatbot Message Sent', { 
-      message: messageText,
-      message_length: messageText.length,
-      timestamp: userMessage.timestamp
-    });
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: messageText }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        setMessages([...newMessages, { text: data.response, sender: 'bot' }]);
+      } catch (error) {
+        console.error('Error fetching chatbot response:', error);
+        setMessages([...newMessages, { text: 'Sorry, something went wrong.', sender: 'bot' }]);
+      } finally {
+        setIsLoading(false);
       }
-
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      const botMessage = {
-        text: data.response || 'I received your message but couldn\'t generate a response.',
-        sender: 'bot',
-        timestamp: new Date()
-      };
-
-      setMessages([...newMessages, botMessage]);
-      
-      logEvent('Chatbot Response Received', {
-        response_length: botMessage.text.length,
-        timestamp: botMessage.timestamp
-      });
-
-    } catch (error) {
-      console.error('Error fetching chatbot response:', error);
-      
-      let errorMessage = 'Sorry, something went wrong.';
-      
-      if (error.message.includes('API key')) {
-        errorMessage = 'API key not configured. Please set up your Gemini API key to use the chatbot.';
-        setError('API key not configured');
-      } else if (error.message.includes('fetch')) {
-        errorMessage = 'Unable to connect to the chat service. Please check your internet connection.';
-      }
-
-      const errorBotMessage = {
-        text: errorMessage,
-        sender: 'bot',
-        timestamp: new Date(),
-        isError: true
-      };
-
-      setMessages([...newMessages, errorBotMessage]);
-      
-      logEvent('Chatbot Error', {
-        error_type: error.name,
-        error_message: error.message,
-        timestamp: new Date()
-      });
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  const formatTime = (timestamp) => {
-    return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const clearChat = () => {
-    const welcomeMessage = {
-      text: "Hello! I'm your AI assistant. How can I help you today?",
-      sender: 'bot',
-      timestamp: new Date()
-    };
-    setMessages([welcomeMessage]);
-    localStorage.setItem('chatbot-messages', JSON.stringify([welcomeMessage]));
-    setError(null);
-    logEvent('Chat Cleared', { timestamp: new Date() });
   };
 
   return (
     <div className="w-full max-w-3xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-2xl font-semibold">AI Chatbot</h2>
-        <button
-          onClick={clearChat}
-          className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 transition"
-        >
-          Clear Chat
-        </button>
-      </div>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-yellow-100 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-700 rounded-lg">
-          <p className="text-yellow-800 dark:text-yellow-200 text-sm">
-            <strong>Note:</strong> {error}
-          </p>
-        </div>
-      )}
-
-      <div className="flex flex-col h-80 bg-gray-100 dark:bg-zinc-700 p-4 rounded-lg overflow-y-auto mb-4 space-y-2">
+      <h2 className="text-2xl font-semibold mb-3">Chatbot</h2>
+      <div className="flex flex-col h-80 bg-gray-100 dark:bg-zinc-700 p-4 rounded-lg overflow-y-auto mb-4">
         {messages.map((msg, index) => (
-          <div key={index} className={`flex flex-col max-w-[80%] ${msg.sender === 'user' ? 'self-end' : 'self-start'}`}>
-            <div className={`p-3 rounded-lg ${msg.sender === 'user' 
-              ? 'bg-blue-500 text-white rounded-br-sm' 
-              : msg.isError 
-                ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-700'
-                : 'bg-white dark:bg-zinc-600 text-gray-800 dark:text-gray-200 rounded-bl-sm shadow-sm'
-            }`}>
-              <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
-            </div>
-            <span className={`text-xs text-gray-500 dark:text-gray-400 mt-1 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
-              {formatTime(msg.timestamp)}
-            </span>
+          <div key={index} className={`p-2 rounded-lg mb-2 ${msg.sender === 'user' ? 'bg-blue-500 text-white self-end' : 'bg-gray-300 dark:bg-zinc-600 self-start'}`}>
+            {msg.text}
           </div>
         ))}
-        
-        {isLoading && (
-          <div className="flex items-center space-x-2 self-start">
-            <div className="bg-white dark:bg-zinc-600 p-3 rounded-lg rounded-bl-sm shadow-sm">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              </div>
-            </div>
-          </div>
-        )}
+        {isLoading && <div className="p-2 rounded-lg mb-2 bg-gray-300 dark:bg-zinc-600 self-start">Thinking...</div>}
       </div>
-      
-      <div className="flex space-x-2">
+      <div className="flex">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-          className="flex-grow rounded-md border border-gray-300 shadow-sm p-3 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Type your message... (Press Enter to send)"
+          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+          className="flex-grow rounded-l-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+          placeholder="Type your message..."
           disabled={isLoading}
-          maxLength={1000}
         />
         <button
           onClick={handleSend}
-          className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-md transition flex items-center space-x-2"
-          disabled={isLoading || !input.trim()}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r-md transition"
+          disabled={isLoading}
         >
-          {isLoading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Sending...</span>
-            </>
-          ) : (
-            <>
-              <span>Send</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </>
-          )}
+          {isLoading ? '...' : 'Send'}
         </button>
-      </div>
-      
-      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-        {input.length}/1000 characters
       </div>
     </div>
   );
@@ -369,17 +205,13 @@ const Page3 = () => {
   const handleSliderChange = (e) => {
     const value = e.target.value;
     setSliderValue(value);
-  };
-
-  const handleSliderEnd = (e) => {
-    const value = e.target.value;
-    logEvent('Slider Value Set', { final_value: value });
+    logEvent('Slider Interacted', { value });
   };
 
   const handleToggle = () => {
     const newValue = !toggleOn;
     setToggleOn(newValue);
-    logEvent('Toggle Set', { on: newValue });
+    logEvent('Toggle Interacted', { on: newValue });
   };
 
   return (
@@ -390,18 +222,16 @@ const Page3 = () => {
           <label htmlFor="slider" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Slider
           </label>
-           <input
-             type="range"
-             id="slider"
-             name="slider"
-             min="0"
-             max="100"
-             value={sliderValue}
-             onChange={handleSliderChange}
-             onMouseUp={handleSliderEnd}
-             onTouchEnd={handleSliderEnd}
-             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-           />
+          <input
+            type="range"
+            id="slider"
+            name="slider"
+            min="0"
+            max="100"
+            value={sliderValue}
+            onChange={handleSliderChange}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+          />
           <p className="text-center text-gray-600 dark:text-gray-400 mt-2">Value: {sliderValue}</p>
         </div>
         <div className="flex items-center justify-between">

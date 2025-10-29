@@ -229,7 +229,7 @@ How can I help you today?`,
 
   const handleSend = async () => {
     const messageText = input.trim();
-    if (!messageText) return;
+    if (!messageText || limitReached) return;
 
     // Add character limit validation
     if (messageText.length > 1000) {
@@ -256,13 +256,19 @@ How can I help you today?`,
     });
 
     try {
+      // Prepare history for the API call
+      const history = messages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      }));
+
       // Use the API route instead of direct SDK calls
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: messageText }),
+        body: JSON.stringify({ history, message: messageText }),
       });
 
       if (!response.ok) {
@@ -284,6 +290,16 @@ How can I help you today?`,
 
       setMessages([...newMessages, botMessage]);
       
+      // Update token count
+      if (data.tokenCount) {
+        const newTotalTokens = tokenCount + data.tokenCount;
+        setTokenCount(newTotalTokens);
+        
+        if (newTotalTokens >= TOKEN_LIMIT) {
+          setLimitReached(true);
+        }
+      }
+      
       logEvent('Chatbot Response Received', {
         response_length: botMessage.text.length,
         usage: data.usage,
@@ -293,7 +309,17 @@ How can I help you today?`,
     } catch (error) {
       console.error('Error sending message to Gemini:', error);
       
-      const errorMessage = handleGeminiError(error);
+      let errorMessage = 'An error occurred while processing your request';
+      if (error.message.includes('API_KEY') || error.message.includes('API key')) {
+        errorMessage = 'Invalid or missing API key';
+      } else if (error.message.includes('QUOTA') || error.message.includes('quota')) {
+        errorMessage = 'API quota exceeded. Please try again later';
+      } else if (error.message.includes('RATE_LIMIT')) {
+        errorMessage = 'Rate limit exceeded. Please try again later';
+      } else if (error.message.includes('SAFETY')) {
+        errorMessage = 'Content blocked by safety filters';
+      }
+      
       setError(errorMessage);
 
       const errorBotMessage = {
@@ -349,6 +375,12 @@ How can I help you today?`,
     logEvent('Chat Cleared', { timestamp: new Date() });
   };
 
+  const handleRestart = () => {
+    setMessages([]);
+    setTokenCount(0);
+    setLimitReached(false);
+  };
+
   return (
     <div className="w-full max-w-3xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
       <div className="flex justify-between items-center mb-3">
@@ -367,12 +399,17 @@ How can I help you today?`,
             </span>
           </div>
         </div>
-        <button
-          onClick={clearChat}
-          className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 transition"
-        >
-          Clear Chat
-        </button>
+        <div className="flex items-center space-x-3">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Tokens: {tokenCount} / {TOKEN_LIMIT}
+          </div>
+          <button
+            onClick={clearChat}
+            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 transition"
+          >
+            Clear Chat
+          </button>
+        </div>
       </div>
       
       {error && (
@@ -532,37 +569,49 @@ How can I help you today?`,
         )}
       </div>
       
-      <div className="flex space-x-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-          className="flex-grow rounded-md border border-gray-300 shadow-sm p-3 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Type your message... (Press Enter to send)"
-          disabled={isLoading}
-          maxLength={1000}
-        />
-        <button
-          onClick={handleSend}
-          className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-md transition flex items-center space-x-2"
-          disabled={isLoading || !input.trim()}
-        >
-          {isLoading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Sending...</span>
-            </>
-          ) : (
-            <>
-              <span>Send</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </>
-          )}
-        </button>
-      </div>
+      {limitReached ? (
+        <div className="text-center">
+          <p className="text-red-500 mb-4">You have reached the token limit for this session.</p>
+          <button
+            onClick={handleRestart}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition"
+          >
+            Restart Session
+          </button>
+        </div>
+      ) : (
+        <div className="flex space-x-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+            className="flex-grow rounded-md border border-gray-300 shadow-sm p-3 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Type your message... (Press Enter to send)"
+            disabled={isLoading}
+            maxLength={1000}
+          />
+          <button
+            onClick={handleSend}
+            className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-md transition flex items-center space-x-2"
+            disabled={isLoading || !input.trim()}
+          >
+            {isLoading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Sending...</span>
+              </>
+            ) : (
+              <>
+                <span>Send</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+              </>
+            )}
+          </button>
+        </div>
+      )}
       
       <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
         {input.length}/1000 characters

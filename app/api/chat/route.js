@@ -32,11 +32,33 @@ export async function POST(req) {
       }, { status: 400 });
     }
 
-    // Use the new API structure
-    const response = await genAI.models.generateContent({
+    // Use the new API structure with chat session
+    const chat = genAI.chats.create({
       model: 'gemini-2.5-flash',
-      contents: message,
-      history: history || []
+      config: {
+        generationConfig: {
+          maxOutputTokens: 8192,
+          temperature: 0.7,
+          topP: 0.8,
+          topK: 40,
+        }
+      }
+    });
+
+    // Add history if provided
+    if (history && history.length > 0) {
+      for (const msg of history) {
+        await chat.addMessage({
+          role: msg.role,
+          parts: msg.parts
+        });
+      }
+    }
+
+    // Send the current message
+    const response = await chat.sendMessage({
+      role: 'user',
+      parts: [{ text: message }]
     });
 
     const text = response.text;
@@ -44,6 +66,10 @@ export async function POST(req) {
     // Get token usage information
     const usage = response.usage || {};
     const totalTokens = (usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0);
+
+    // Debug logging
+    console.log('API Response usage:', usage);
+    console.log('Calculated totalTokens:', totalTokens);
 
     return NextResponse.json({ 
       response: text, 

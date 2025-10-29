@@ -280,6 +280,11 @@ How can I help you today?`,
 
       const data = await response.json();
       
+      // Debug logging
+      console.log('Frontend received data:', data);
+      console.log('Current tokenCount state:', tokenCount);
+      console.log('Received tokenCount from API:', data.tokenCount);
+      
       if (data.error) {
         throw new Error(data.error);
       }
@@ -296,11 +301,14 @@ How can I help you today?`,
       // Update token count
       if (data.tokenCount) {
         const newTotalTokens = tokenCount + data.tokenCount;
+        console.log('Updating token count from', tokenCount, 'to', newTotalTokens);
         setTokenCount(newTotalTokens);
         
         if (newTotalTokens >= TOKEN_LIMIT) {
           setLimitReached(true);
         }
+      } else {
+        console.log('No tokenCount received from API');
       }
       
       logEvent('Chatbot Response Received', {

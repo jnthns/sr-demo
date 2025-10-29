@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
+
 
 export async function POST(req) {
   try {
@@ -31,23 +32,25 @@ export async function POST(req) {
       }, { status: 400 });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-    const chat = model.startChat({ history: history || [] });
-    const result = await chat.sendMessage(message);
+    // Use the new API structure
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: message,
+      history: history || []
+    });
 
-    const response = await result.response;
-    const text = response.text();
+    const text = response.text;
 
-    // The response already contains the token count for the prompt and the response.
-    const usageMetadata = response.usage_metadata;
-    const totalTokens = usageMetadata.prompt_token_count + usageMetadata.candidates_token_count;
+    // Get token usage information
+    const usage = response.usage || {};
+    const totalTokens = (usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0);
 
     return NextResponse.json({ 
       response: text, 
       tokenCount: totalTokens,
       usage: {
-        prompt_tokens: usageMetadata.prompt_token_count,
-        candidates_tokens: usageMetadata.candidates_token_count,
+        prompt_tokens: usage.promptTokenCount || 0,
+        candidates_tokens: usage.candidatesTokenCount || 0,
         total_tokens: totalTokens
       },
       timestamp: new Date().toISOString()

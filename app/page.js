@@ -143,6 +143,9 @@ const Page2 = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [tokenCount, setTokenCount] = useState(0);
+  const [limitReached, setLimitReached] = useState(false);
+  const TOKEN_LIMIT = 32000; // Free tier limit for gemini-pro
 
   // Initialize with welcome message and load saved messages
   useEffect(() => {

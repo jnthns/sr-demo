@@ -136,14 +136,23 @@ const Page2 = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [tokenCount, setTokenCount] = useState(0);
+  const [limitReached, setLimitReached] = useState(false);
+  const TOKEN_LIMIT = 32000; // Free tier limit for gemini-pro
 
   const handleSend = async () => {
-    if (input.trim()) {
+    if (input.trim() && !limitReached) {
+      const userMessage = { role: 'user', parts: [{ text: input }] };
       const newMessages = [...messages, { text: input, sender: 'user' }];
       setMessages(newMessages);
       setInput('');
       setIsLoading(true);
       logEvent('Chatbot Message Sent', { message: input });
+
+      const history = messages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      }));
 
       try {
         const response = await fetch('/api/chat', {
@@ -151,11 +160,19 @@ const Page2 = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ message: input }),
+          body: JSON.stringify({ history, message: input }),
         });
 
         const data = await response.json();
         setMessages([...newMessages, { text: data.response, sender: 'bot' }]);
+
+        const newTotalTokens = tokenCount + data.tokenCount;
+        setTokenCount(newTotalTokens);
+
+        if (newTotalTokens >= TOKEN_LIMIT) {
+          setLimitReached(true);
+        }
+
       } catch (error) {
         console.error('Error fetching chatbot response:', error);
         setMessages([...newMessages, { text: 'Sorry, something went wrong.', sender: 'bot' }]);
@@ -165,9 +182,20 @@ const Page2 = () => {
     }
   };
 
+  const handleRestart = () => {
+    setMessages([]);
+    setTokenCount(0);
+    setLimitReached(false);
+  };
+
   return (
     <div className="w-full max-w-3xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
-      <h2 className="text-2xl font-semibold mb-3">Chatbot</h2>
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-2xl font-semibold">Chatbot</h2>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          Tokens: {tokenCount} / {TOKEN_LIMIT}
+        </div>
+      </div>
       <div className="flex flex-col h-80 bg-gray-100 dark:bg-zinc-700 p-4 rounded-lg overflow-y-auto mb-4">
         {messages.map((msg, index) => (
           <div key={index} className={`p-2 rounded-lg mb-2 ${msg.sender === 'user' ? 'bg-blue-500 text-white self-end' : 'bg-gray-300 dark:bg-zinc-600 self-start'}`}>
@@ -176,24 +204,36 @@ const Page2 = () => {
         ))}
         {isLoading && <div className="p-2 rounded-lg mb-2 bg-gray-300 dark:bg-zinc-600 self-start">Thinking...</div>}
       </div>
-      <div className="flex">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-          className="flex-grow rounded-l-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
-          placeholder="Type your message..."
-          disabled={isLoading}
-        />
-        <button
-          onClick={handleSend}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r-md transition"
-          disabled={isLoading}
-        >
-          {isLoading ? '...' : 'Send'}
-        </button>
-      </div>
+      {limitReached ? (
+        <div className="text-center">
+          <p className="text-red-500 mb-4">You have reached the token limit for this session.</p>
+          <button
+            onClick={handleRestart}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition"
+          >
+            Restart Session
+          </button>
+        </div>
+      ) : (
+        <div className="flex">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            className="flex-grow rounded-l-md border border-gray-300 shadow-sm p-2 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+            placeholder="Type your message..."
+            disabled={isLoading}
+          />
+          <button
+            onClick={handleSend}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r-md transition"
+            disabled={isLoading}
+          >
+            {isLoading ? '...' : 'Send'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

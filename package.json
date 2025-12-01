@@ -12,6 +12,7 @@
     "export": "next build && next export"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.30.0",
     "@amplitude/engagement-browser": "^1.0.0",
     "@amplitude/experiment-js-client": "^1.15.6",
     "@amplitude/session-replay-browser": "^1.22.3",

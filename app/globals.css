@@ -31,3 +31,113 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Custom styles for markdown in chat messages */
+.chat-markdown {
+  line-height: 1.6;
+}
+
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3,
+.chat-markdown h4,
+.chat-markdown h5,
+.chat-markdown h6 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.chat-markdown p {
+  margin-bottom: 0.75rem;
+}
+
+.chat-markdown ul,
+.chat-markdown ol {
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+}
+
+.chat-markdown li {
+  margin-bottom: 0.25rem;
+}
+
+.chat-markdown blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 4px solid #e5e7eb;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.chat-markdown code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875em;
+}
+
+.chat-markdown pre {
+  margin: 1rem 0;
+  overflow-x: auto;
+  border-radius: 0.375rem;
+}
+
+.chat-markdown pre code {
+  display: block;
+  padding: 1rem;
+  background-color: #f3f4f6;
+  border-radius: 0.375rem;
+}
+
+.chat-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.chat-markdown th,
+.chat-markdown td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.chat-markdown th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.chat-markdown a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.chat-markdown a:hover {
+  color: #1d4ed8;
+}
+
+/* Dark mode styles */
+.dark .chat-markdown blockquote {
+  border-left-color: #4b5563;
+  color: #9ca3af;
+}
+
+.dark .chat-markdown pre code {
+  background-color: #374151;
+}
+
+.dark .chat-markdown th {
+  background-color: #374151;
+}
+
+.dark .chat-markdown th,
+.dark .chat-markdown td {
+  border-bottom-color: #4b5563;
+}
+
+.dark .chat-markdown a {
+  color: #60a5fa;
+}
+
+.dark .chat-markdown a:hover {
+  color: #93c5fd;
+}

@@ -1,14 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef } from "react";
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { logEvent, analytics } from "../../lib/amplitude"
+import dynamic from "next/dynamic";
+import { logEvent } from "../../lib/amplitude"
 import { initializeChat, clearChatHistory, handleGeminiError } from "../../lib/geminichat"
 import { chatService } from "../../lib/chatService"
-import AnalyticsProvider from "../../lib/amplitude"
+
+const MarkdownRenderer = dynamic(() => import("../components/MarkdownRenderer"), {
+  ssr: false,
+  loading: () => <p className="text-sm text-gray-500 dark:text-gray-400">Loading message...</p>
+});
 
 export default function ChatPage() {
   const [messages, setMessages] = useState([]);
@@ -247,7 +248,6 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
 
   return (
     <>
-      <AnalyticsProvider />
       <main className="flex min-h-screen flex-col items-center justify-between p-24">
         <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
           <p className="amp-unmask fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
@@ -311,122 +311,11 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
                   {msg.sender === 'user' ? (
                     <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
                   ) : (
-                    <div className="text-sm prose prose-sm max-w-none dark:prose-invert chat-markdown">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          // Custom styling for code blocks
-                          code: ({ node, inline, className, children, ...props }) => {
-                            const match = /language-(\w+)/.exec(className || '');
-                            return !inline && match ? (
-                              <div className="rounded-md my-2 overflow-hidden relative group">
-                                <div className="flex justify-between items-center px-3 py-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                                  <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                                    {match[1]}
-                                  </span>
-                                  <button
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(String(children).replace(/\n$/, ''));
-                                    }}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                    title="Copy code"
-                                  >
-                                    Copy
-                                  </button>
-                                </div>
-                                <SyntaxHighlighter
-                                  style={typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? oneDark : oneLight}
-                                  language={match[1]}
-                                  PreTag="div"
-                                  className="!m-0 !p-3"
-                                  customStyle={{
-                                    margin: 0,
-                                    padding: '0.75rem',
-                                    background: 'transparent',
-                                    fontSize: '0.875rem',
-                                    lineHeight: '1.5'
-                                  }}
-                                >
-                                  {String(children).replace(/\n$/, '')}
-                                </SyntaxHighlighter>
-                              </div>
-                            ) : (
-                              <code className="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-xs" {...props}>
-                                {children}
-                              </code>
-                            );
-                          },
-                          // Custom styling for pre blocks
-                          pre: ({ children }) => (
-                            <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-3 my-2 overflow-x-auto">
-                              <pre className="text-sm">{children}</pre>
-                            </div>
-                          ),
-                          // Custom styling for blockquotes
-                          blockquote: ({ children }) => (
-                            <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 my-2 italic text-gray-600 dark:text-gray-400">
-                              {children}
-                            </blockquote>
-                          ),
-                          // Custom styling for tables
-                          table: ({ children }) => (
-                            <div className="overflow-x-auto my-2">
-                              <table className="min-w-full border border-gray-300 dark:border-gray-600">
-                                {children}
-                              </table>
-                            </div>
-                          ),
-                          th: ({ children }) => (
-                            <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 bg-gray-100 dark:bg-gray-700 font-semibold text-left">
-                              {children}
-                            </th>
-                          ),
-                          td: ({ children }) => (
-                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
-                              {children}
-                            </td>
-                          ),
-                          // Custom styling for lists
-                          ul: ({ children }) => (
-                            <ul className="list-disc list-inside my-2 space-y-1">
-                              {children}
-                            </ul>
-                          ),
-                          ol: ({ children }) => (
-                            <ol className="list-decimal list-inside my-2 space-y-1">
-                              {children}
-                            </ol>
-                          ),
-                          // Custom styling for links
-                          a: ({ href, children }) => (
-                            <a 
-                              href={href} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-blue-600 dark:text-blue-400 hover:underline"
-                            >
-                              {children}
-                            </a>
-                          ),
-                          // Custom styling for headings
-                          h1: ({ children }) => (
-                            <h1 className="text-lg font-bold my-2">{children}</h1>
-                          ),
-                          h2: ({ children }) => (
-                            <h2 className="text-base font-bold my-2">{children}</h2>
-                          ),
-                          h3: ({ children }) => (
-                            <h3 className="text-sm font-bold my-2">{children}</h3>
-                          ),
-                          // Custom styling for horizontal rules
-                          hr: () => (
-                            <hr className="border-gray-300 dark:border-gray-600 my-3" />
-                          ),
-                        }}
-                      >
-                        {msg.text}
-                      </ReactMarkdown>
-                    </div>
+                    <MarkdownRenderer
+                      className="text-sm prose prose-sm max-w-none dark:prose-invert chat-markdown"
+                      content={msg.text}
+                      enableCopy
+                    />
                   )}
                 </div>
                 <span className={`text-xs text-gray-500 dark:text-gray-400 mt-1 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>

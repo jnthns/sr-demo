@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from "react";
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { logEvent, analytics } from "../../lib/amplitude"
-import AnalyticsProvider from "../../lib/amplitude"
+import dynamic from "next/dynamic";
+import { logEvent } from "../../lib/amplitude"
+
+const MarkdownRenderer = dynamic(() => import("../components/MarkdownRenderer"), {
+  ssr: false,
+  loading: () => <p className="text-sm text-gray-500 dark:text-gray-400">Loading message...</p>
+});
 
 export default function FileSearchPage() {
   // State management
@@ -510,7 +511,6 @@ I'll provide answers with citations from your uploaded files.`,
 
   return (
     <>
-      <AnalyticsProvider />
       <main className="flex min-h-screen flex-col p-6">
         <div className="max-w-7xl mx-auto w-full">
           <h1 className="text-3xl font-bold mb-6">File Search (RAG) Assistant</h1>
@@ -668,32 +668,10 @@ I'll provide answers with citations from your uploaded files.`,
                           {msg.sender === 'user' ? (
                             <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
                           ) : (
-                            <div className="text-sm prose prose-sm max-w-none dark:prose-invert">
-                              <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={{
-                                  code: ({ node, inline, className, children, ...props }) => {
-                                    const match = /language-(\w+)/.exec(className || '');
-                                    return !inline && match ? (
-                                      <SyntaxHighlighter
-                                        style={typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? oneDark : oneLight}
-                                        language={match[1]}
-                                        PreTag="div"
-                                        className="rounded-md"
-                                      >
-                                        {String(children).replace(/\n$/, '')}
-                                      </SyntaxHighlighter>
-                                    ) : (
-                                      <code className="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-xs" {...props}>
-                                        {children}
-                                      </code>
-                                    );
-                                  },
-                                }}
-                              >
-                                {msg.text}
-                              </ReactMarkdown>
-                            </div>
+                            <MarkdownRenderer
+                              className="text-sm prose prose-sm max-w-none dark:prose-invert"
+                              content={msg.text}
+                            />
                           )}
                         </div>
                         

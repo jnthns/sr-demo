@@ -8,9 +8,11 @@ export default function Navigation() {
 
   const navItems = [
     { href: '/', label: 'Experiments', icon: '🧪' },
+    { href: '/cart-analysis', label: 'Cart Arrays', icon: '🛍️' },
     { href: '/chat', label: 'Chat', icon: '💬' },
     { href: '/store', label: 'Store', icon: '🛒' },
-    { href: '/filesearch', label: 'File Search', icon: '📚' }
+    { href: '/filesearch', label: 'File Search', icon: '📚' },
+    { href: '/amplitude', label: 'Amplitude APIs', icon: '🧰' }
   ];
 
   return (
@@ -34,6 +36,7 @@ export default function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={true}
                   className={`
                     relative flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
                     ${isActive
@@ -75,6 +78,7 @@ export default function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={true}
                   className={`
                     flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200
                     ${isActive

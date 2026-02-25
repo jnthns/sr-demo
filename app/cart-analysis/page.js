@@ -18,6 +18,51 @@ const createSecondItem = () => ([
   { key: 'price', value: '18.9' }
 ]);
 
+const DEFAULT_CART_VALUE = 52.89;
+const DEFAULT_TOTAL_ITEMS = 11;
+
+const normalizeKey = (key) => key.trim().toLowerCase();
+
+const getNumericValue = (value) => {
+  const typed = toTypedValue(String(value ?? '').trim());
+  return typeof typed === 'number' && !Number.isNaN(typed) ? typed : null;
+};
+
+const findFieldValue = (fields, candidates) => {
+  for (const candidate of candidates) {
+    const match = fields.find((field) => normalizeKey(field.key) === candidate);
+    if (!match) continue;
+    const numeric = getNumericValue(match.value);
+    if (numeric !== null) return numeric;
+  }
+  return null;
+};
+
+const computeCartMetrics = (items) => {
+  const quantityCandidates = ['quantity', 'qty', 'units', 'count', 'items'];
+  const priceCandidates = [
+    'discounted_price',
+    'discountedprice',
+    'price',
+    'full_price',
+    'fullprice',
+    'amount',
+    'cost',
+    'value'
+  ];
+
+  return items.reduce(
+    (acc, fields) => {
+      const quantity = findFieldValue(fields, quantityCandidates) ?? 1;
+      const price = findFieldValue(fields, priceCandidates) ?? 0;
+      acc.totalItems += quantity;
+      acc.cartValue += price * quantity;
+      return acc;
+    },
+    { cartValue: 0, totalItems: 0 }
+  );
+};
+
 const toTypedValue = (rawValue) => {
   if (rawValue === '') return '';
   const asNumber = Number(rawValue);
@@ -39,6 +84,12 @@ function CartArrayBuilder({
   onDuplicateAcross
 }) {
   const [dragState, setDragState] = useState(null);
+  const [importValue, setImportValue] = useState('');
+  const [importError, setImportError] = useState('');
+  const [cartValue, setCartValue] = useState(DEFAULT_CART_VALUE);
+  const [totalItems, setTotalItems] = useState(DEFAULT_TOTAL_ITEMS);
+  const [autoCartValue, setAutoCartValue] = useState(true);
+  const [autoTotalItems, setAutoTotalItems] = useState(true);
   const jsonPreview = useMemo(() => {
     const parsedItems = items.map((fields) => {
       const obj = {};
@@ -49,8 +100,95 @@ function CartArrayBuilder({
       return obj;
     });
 
-    return JSON.stringify({ [parentKey.trim() || 'products']: parsedItems }, null, 2);
-  }, [items, parentKey]);
+    return JSON.stringify({
+      event_properties: {
+        'Cart Value': cartValue,
+        'Total Items': totalItems,
+        [parentKey.trim() || 'products']: parsedItems
+      }
+    }, null, 2);
+  }, [items, parentKey, cartValue, totalItems]);
+
+  useEffect(() => {
+    if (!autoCartValue && !autoTotalItems) return;
+    const metrics = computeCartMetrics(items);
+    if (autoCartValue) {
+      setCartValue(Number(metrics.cartValue.toFixed(2)));
+    }
+    if (autoTotalItems) {
+      setTotalItems(metrics.totalItems);
+    }
+  }, [items, autoCartValue, autoTotalItems]);
+
+  const parseImportLines = (raw) => {
+    const tokens = raw
+      .split('\n')
+      .flatMap((line) => line.split(','))
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (!tokens.length) {
+      throw new Error('Provide at least one property key.');
+    }
+
+    const prefixes = new Set();
+    const keys = [];
+
+    tokens.forEach((token) => {
+      if (token.includes('.')) {
+        const [prefix, ...rest] = token.split('.');
+        const key = rest.join('.').trim();
+        if (!key) {
+          throw new Error(`Invalid key: "${token}"`);
+        }
+        prefixes.add(prefix.trim());
+        keys.push(key);
+      } else {
+        keys.push(token);
+      }
+    });
+
+    if (prefixes.size > 1) {
+      throw new Error('Use a single parent key prefix in the list.');
+    }
+
+    if (prefixes.size === 1) {
+      const [prefix] = prefixes;
+      if (prefix) {
+        setParentKey(prefix);
+      }
+    }
+
+    return Array.from(new Set(keys));
+  };
+
+  const coerceFieldValue = (value) => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  };
+
+  const handleApplyImport = () => {
+    if (!importValue.trim()) {
+      setImportError('Paste a list of property keys to import.');
+      return;
+    }
+    try {
+      const importedKeys = parseImportLines(importValue);
+      const existingValues = new Map(
+        (items[0] || []).map((field) => [field.key, field.value])
+      );
+      setItems([
+        importedKeys.map((key) => ({
+          key,
+          value: existingValues.get(key) ?? ''
+        }))
+      ]);
+      setImportError('');
+    } catch (error) {
+      setImportError(error.message || 'Unable to parse JSON input.');
+    }
+  };
 
   const updateField = (itemIndex, fieldIndex, nextField) => {
     setItems((prev) => prev.map((item, idx) => {
@@ -127,6 +265,94 @@ function CartArrayBuilder({
     <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">{title}</h2>
+      </div>
+
+      <div className="space-y-4 rounded-lg border border-gray-200 dark:border-zinc-700 p-4">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Import JSON</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Paste a list of property keys to populate the form and preview.
+          </p>
+        </div>
+        <div className="space-y-2">
+          <textarea
+            value={importValue}
+            onChange={(event) => setImportValue(event.target.value)}
+            className="min-h-[140px] w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm font-mono dark:bg-zinc-700"
+            placeholder={`Example:\ncart_contents.category\ncart_contents.product_id\ncart_contents.product_name\ncart_contents.quantity\ncart_contents.discounted_price`}
+          />
+          {importError ? (
+            <p className="text-xs text-red-500">{importError}</p>
+          ) : (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Accepts one key per line (or comma-separated). A single parent prefix is supported.
+            </p>
+          )}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleApplyImport}
+              className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              Apply JSON
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 rounded-lg border border-gray-200 dark:border-zinc-700 p-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">Cart Value</label>
+            <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <input
+                type="checkbox"
+                checked={autoCartValue}
+                onChange={(event) => setAutoCartValue(event.target.checked)}
+              />
+              Auto
+            </label>
+          </div>
+          <input
+            value={cartValue}
+            onChange={(event) => {
+              setCartValue(event.target.value === '' ? '' : Number(event.target.value));
+              setAutoCartValue(false);
+            }}
+            className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+            type="number"
+            step="0.01"
+          />
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Auto-calculated from quantity and price fields when enabled.
+          </p>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">Total Items</label>
+            <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <input
+                type="checkbox"
+                checked={autoTotalItems}
+                onChange={(event) => setAutoTotalItems(event.target.checked)}
+              />
+              Auto
+            </label>
+          </div>
+          <input
+            value={totalItems}
+            onChange={(event) => {
+              setTotalItems(event.target.value === '' ? '' : Number(event.target.value));
+              setAutoTotalItems(false);
+            }}
+            className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+            type="number"
+            step="1"
+          />
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Auto-calculated from quantity fields when enabled.
+          </p>
+        </div>
       </div>
 
       <div>
@@ -344,10 +570,18 @@ export default function CartAnalysisPage() {
 
     setTargetItems((prev) => {
       const next = prev.map((item) => [...item]);
+      const fieldKey = field.key.trim();
       if (!next[itemIndex]) {
         next[itemIndex] = [{ ...field }];
       } else {
-        next[itemIndex].push({ ...field });
+        const existingIndex = next[itemIndex].findIndex(
+          (candidate) => candidate.key.trim() === fieldKey
+        );
+        if (existingIndex >= 0) {
+          next[itemIndex][existingIndex] = { ...next[itemIndex][existingIndex], value: field.value };
+        } else {
+          next[itemIndex].push({ ...field });
+        }
       }
       return next;
     });

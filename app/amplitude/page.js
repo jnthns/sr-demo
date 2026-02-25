@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import * as amplitude from '@amplitude/analytics-browser';
 import { deviceId as defaultDeviceId } from '../../lib/amplitude';
 
-const DEFAULT_API_KEY = 'a1e47468f1a2a0f73ee870f492893abb';
+const DEFAULT_API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY;
 
 const getRandomId = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {

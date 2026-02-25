@@ -5,7 +5,7 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const AMPLITUDE_API_KEY = 'a1e47468f1a2a0f73ee870f492893abb';
+const AMPLITUDE_API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY;
 
 export const metadata = {
   title: "Jon Test App",

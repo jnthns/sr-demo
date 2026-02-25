@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as amplitude from '@amplitude/analytics-browser';
 import { deviceId as defaultDeviceId } from '../../lib/amplitude';
 
@@ -49,6 +49,13 @@ export default function AmplitudeApiTesterPage() {
     batch: null
   });
 
+  const [lastPayload, setLastPayload] = useState({
+    identify: null,
+    groupIdentify: null,
+    http: null,
+    batch: null
+  });
+
   const [currentTimeMs, setCurrentTimeMs] = useState(Date.now());
 
   const setStatusMessage = (key, nextStatus) => {
@@ -86,6 +93,14 @@ export default function AmplitudeApiTesterPage() {
       amplitude.setDeviceId(deviceId);
     }
 
+    const payload = {
+      user_id: resolvedUserId,
+      device_id: deviceId || undefined,
+      user_properties: { $set: data },
+      time,
+    };
+    setLastPayload((prev) => ({ ...prev, identify: payload }));
+
     try {
       await amplitude.identify(identifyObj, { time });
       setCurrentTimeMs(time);
@@ -121,6 +136,16 @@ export default function AmplitudeApiTesterPage() {
       amplitude.setDeviceId(deviceId);
     }
 
+    const payload = {
+      user_id: resolvedUserId,
+      device_id: deviceId || undefined,
+      group_type: groupType.trim(),
+      group_name: groupName.trim(),
+      group_properties: { $set: data },
+      time,
+    };
+    setLastPayload((prev) => ({ ...prev, groupIdentify: payload }));
+
     try {
       await amplitude.groupIdentify(groupType.trim(), groupName.trim(), identifyObj, { time });
       setCurrentTimeMs(time);
@@ -154,6 +179,7 @@ export default function AmplitudeApiTesterPage() {
         }
       ]
     };
+    setLastPayload((prev) => ({ ...prev, http: payload }));
 
     try {
       const response = await fetch('https://api2.amplitude.com/2/httpapi', {
@@ -193,6 +219,7 @@ export default function AmplitudeApiTesterPage() {
         }
       ]
     };
+    setLastPayload((prev) => ({ ...prev, batch: payload }));
 
     try {
       const response = await fetch('https://api2.amplitude.com/2/batch', {
@@ -209,6 +236,20 @@ export default function AmplitudeApiTesterPage() {
     } catch (error) {
       setStatusMessage('batch', { ok: false, message: error.message });
     }
+  };
+
+  const renderPayload = (payload) => {
+    if (!payload) return null;
+    return (
+      <div className="mt-3">
+        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+          Request Body
+        </label>
+        <pre className="rounded-md border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900 p-3 text-xs text-gray-700 dark:text-gray-300 overflow-x-auto max-h-48 overflow-y-auto font-mono">
+          {JSON.stringify(payload, null, 2)}
+        </pre>
+      </div>
+    );
   };
 
   const renderStatus = (entry) => {
@@ -327,6 +368,7 @@ export default function AmplitudeApiTesterPage() {
             >
               Send Identify
             </button>
+            {renderPayload(lastPayload.identify)}
             {renderStatus(status.identify)}
           </div>
 
@@ -372,6 +414,7 @@ export default function AmplitudeApiTesterPage() {
             >
               Send Group Identify
             </button>
+            {renderPayload(lastPayload.groupIdentify)}
             {renderStatus(status.groupIdentify)}
           </div>
         </div>
@@ -404,6 +447,7 @@ export default function AmplitudeApiTesterPage() {
             >
               Send HTTP API Event
             </button>
+            {renderPayload(lastPayload.http)}
             {renderStatus(status.http)}
           </div>
 
@@ -434,6 +478,7 @@ export default function AmplitudeApiTesterPage() {
             >
               Send Batch API Event
             </button>
+            {renderPayload(lastPayload.batch)}
             {renderStatus(status.batch)}
           </div>
         </div>

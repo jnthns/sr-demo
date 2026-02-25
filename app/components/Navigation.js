@@ -12,7 +12,8 @@ export default function Navigation() {
     { href: '/chat', label: 'Chat', icon: '💬' },
     { href: '/store', label: 'Store', icon: '🛒' },
     { href: '/filesearch', label: 'File Search', icon: '📚' },
-    { href: '/amplitude', label: 'Amplitude APIs', icon: '🧰' }
+    { href: '/amplitude', label: 'Amplitude APIs', icon: '🧰' },
+    { href: '/notes', label: 'Account Notes', icon: '📋' }
   ];
 
   return (

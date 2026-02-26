@@ -46,26 +46,6 @@ const createSubtask = (title = '') => ({
   completed: false,
 });
 
-const SEED_DATA = [
-  { name: 'Siemens', tasks: [{ task: 'RBAC help', subtasks: [] }, { task: 'Cohort use case', subtasks: [] }] },
-  { name: 'SketchUp (SU)', tasks: [{ task: 'G&S events not reaching Amplitude', subtasks: ['Meeting Tuesday'] }] },
-  { name: 'Phantom', tasks: [{ task: 'CDC setup validation', subtasks: ['Check MCP notes'] }] },
-  { name: 'Zip', tasks: [{ task: 'Taxonomy audit', subtasks: ['Follow up with Archit'] }] },
-  { name: 'The Real Real (TRR)', tasks: [{ task: 'Metric validation — analytics vs. experiments', subtasks: [] }, { task: 'Chart widget for current users', subtasks: [] }] },
-  { name: 'Asana', tasks: [{ task: 'Query & group properties format for ingestion', subtasks: [] }] },
-  { name: 'Udemy', tasks: [{ task: 'Browser SDK questions', subtasks: [] }] },
-];
-
-const buildSeedAccounts = () =>
-  SEED_DATA.map((acct) => ({
-    ...createAccount(acct.name),
-    tasks: acct.tasks.map((t) => ({
-      ...createTask(t.task),
-      collapsed: t.subtasks.length === 0,
-      subtasks: t.subtasks.map((s) => createSubtask(s)),
-    })),
-  }));
-
 const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
 const URL_TEST = /https?:\/\/[^\s]+/;
 const hasUrl = (text) => URL_TEST.test(text);

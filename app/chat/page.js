@@ -8,7 +8,7 @@ import { chatService } from "../../lib/chatService"
 
 const MarkdownRenderer = dynamic(() => import("../components/MarkdownRenderer"), {
   ssr: false,
-  loading: () => <p className="text-sm text-gray-500 dark:text-gray-400">Loading message...</p>
+  loading: () => <p className="text-sm text-zen-500">Loading message...</p>
 });
 
 export default function ChatPage() {
@@ -247,26 +247,19 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
   };
 
   return (
-    <>
-      <main className="flex min-h-screen flex-col items-center justify-between p-24">
-        <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-          <p className="amp-unmask fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-            This is unmasked.
-          </p>
-        </div>
-        <br />
-
-        <div className="w-full max-w-3xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
+    <div className="min-h-screen py-10">
+      <div className="max-w-3xl mx-auto px-6 space-y-6">
+        <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
           <div className="flex justify-between items-center mb-3">
             <div className="flex items-center space-x-3">
-              <h2 className="text-2xl font-semibold">AI Chatbot</h2>
+              <h2 className="text-2xl font-light tracking-wide text-zen-700">AI Chatbot</h2>
               <div className={`flex items-center space-x-1 text-xs px-2 py-1 rounded-full ${
                 isInitialized && !error
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                  ? 'bg-matcha-100 text-matcha-300' 
+                  : 'bg-amber-500/10 border-amber-500/20 text-amber-300'
               }`}>
                 <div className={`w-2 h-2 rounded-full ${
-                  isInitialized && !error ? 'bg-green-500' : 'bg-yellow-500'
+                  isInitialized && !error ? 'bg-matcha-500' : 'bg-amber-500'
                 }`}></div>
                 <span>
                   {isInitialized && !error ? 'Ready' : 'Initializing...'}
@@ -274,12 +267,12 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-zen-500">
                 Tokens: {tokenCount} / {TOKEN_LIMIT}
               </div>
               <button
                 onClick={clearChat}
-                className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 transition"
+                className="text-sm text-zen-500 hover:text-zen-700 px-2 py-1 rounded hover:bg-zen-200 transition"
               >
                 Clear Chat
               </button>
@@ -287,8 +280,8 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
           </div>
           
           {error && (
-            <div className="mb-4 p-3 bg-yellow-100 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-700 rounded-lg">
-              <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+            <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <p className="text-amber-300 text-sm">
                 <strong>Note:</strong> {error}
               </p>
             </div>
@@ -296,29 +289,29 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
 
           <div 
             ref={chatContainerRef}
-            className={`flex flex-col bg-gray-100 dark:bg-zinc-700 p-4 rounded-lg overflow-y-auto mb-4 space-y-2 transition-all duration-300 ease-in-out ${
+            className={`flex flex-col bg-zen-100 p-4 rounded-lg overflow-y-auto mb-4 space-y-2 transition-all duration-300 ease-in-out ${
               chatExpanded ? 'h-[600px]' : 'h-80'
             }`}
           >
             {messages.map((msg, index) => (
               <div key={index} className={`flex flex-col max-w-[80%] ${msg.sender === 'user' ? 'self-end' : 'self-start'}`}>
                 <div className={`p-3 rounded-lg ${msg.sender === 'user' 
-                  ? 'bg-blue-500 text-white rounded-br-sm' 
+                  ? 'bg-gradient-to-r from-matcha-500 to-matcha-600 text-white rounded-br-sm' 
                   : msg.isError 
-                    ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-700'
-                    : 'bg-white dark:bg-zinc-600 text-gray-800 dark:text-gray-200 rounded-bl-sm shadow-sm'
+                    ? 'bg-red-500/10 text-red-300 border border-red-500/20'
+                    : 'bg-zen-100 text-zen-800 rounded-bl-sm'
                 }`}>
                   {msg.sender === 'user' ? (
                     <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
                   ) : (
                     <MarkdownRenderer
-                      className="text-sm prose prose-sm max-w-none dark:prose-invert chat-markdown"
+                      className="text-sm prose prose-sm max-w-none chat-markdown"
                       content={msg.text}
                       enableCopy
                     />
                   )}
                 </div>
-                <span className={`text-xs text-gray-500 dark:text-gray-400 mt-1 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
+                <span className={`text-xs text-zen-500 mt-1 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
                   {formatTime(msg.timestamp)}
                 </span>
               </div>
@@ -326,11 +319,11 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
             
             {isLoading && (
               <div className="flex items-center space-x-2 self-start">
-                <div className="bg-white dark:bg-zinc-600 p-3 rounded-lg rounded-bl-sm shadow-sm">
+                <div className="bg-zen-100 p-3 rounded-lg rounded-bl-sm">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-zen-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-zen-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-zen-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
                 </div>
               </div>
@@ -342,7 +335,7 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
               <p className="text-red-500 mb-4">You have reached the token limit for this session.</p>
               <button
                 onClick={handleRestart}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition"
+                className="bg-matcha-500 hover:bg-matcha-600 text-white font-bold py-2 px-4 rounded-lg transition"
               >
                 Restart Session
               </button>
@@ -354,14 +347,14 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                className="flex-grow rounded-md border border-gray-300 shadow-sm p-3 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-grow rounded-lg border border-zen-300 bg-zen-100 p-3 shadow-sm focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
                 placeholder="Type your message... (Press Enter to send)"
                 disabled={isLoading}
                 maxLength={1000}
               />
               <button
                 onClick={handleSend}
-                className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-md transition flex items-center space-x-2"
+                className="bg-matcha-500 hover:bg-matcha-600 disabled:bg-zen-200 disabled:text-zen-400 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg transition flex items-center space-x-2"
                 disabled={isLoading || !input.trim()}
               >
                 {isLoading ? (
@@ -381,11 +374,11 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
             </div>
           )}
           
-          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+          <div className="mt-2 text-xs text-zen-500 text-center">
             {input.length}/1000 characters
           </div>
         </div>
-      </main>
-    </>
+      </div>
+    </div>
   );
 }

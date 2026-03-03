@@ -242,10 +242,10 @@ export default function AmplitudeApiTesterPage() {
     if (!payload) return null;
     return (
       <div className="mt-3">
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+        <label className="block text-xs font-medium text-zen-500 mb-1">
           Request Body
         </label>
-        <pre className="rounded-md border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900 p-3 text-xs text-gray-700 dark:text-gray-300 overflow-x-auto max-h-48 overflow-y-auto font-mono">
+        <pre className="rounded-lg border border-zen-200 bg-[#0d0b1e] p-3 text-xs text-zen-600 overflow-x-auto max-h-48 overflow-y-auto font-mono">
           {JSON.stringify(payload, null, 2)}
         </pre>
       </div>
@@ -255,31 +255,31 @@ export default function AmplitudeApiTesterPage() {
   const renderStatus = (entry) => {
     if (!entry) return null;
     const styles = entry.ok
-      ? 'border-green-300 bg-green-50 text-green-800'
-      : 'border-red-300 bg-red-50 text-red-800';
+      ? 'border-matcha-500/20 bg-matcha-500/10 text-matcha-300'
+      : 'border-red-500/20 bg-red-500/10 text-red-300';
     return (
-      <div className={`mt-3 rounded-md border p-3 text-sm whitespace-pre-wrap break-words ${styles}`}>
+      <div className={`mt-3 rounded-lg border p-3 text-sm whitespace-pre-wrap break-words ${styles}`}>
         {entry.message}
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-white py-10">
+    <div className="min-h-screen text-zen-800 py-10">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6">
-          <h1 className="text-3xl font-semibold mb-2">Amplitude API Tester</h1>
-          <p className="text-gray-600 dark:text-gray-300">
+        <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
+          <h1 className="text-2xl font-light tracking-wide text-zen-700 mb-2">Amplitude API Tester</h1>
+          <p className="text-zen-500">
             Send Identify, Group Identify, HTTP, and Batch requests. The time field is always set
             to the current datetime when the request is sent.
           </p>
         </div>
 
-        <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Shared Context</h2>
+        <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
+          <h2 className="text-lg font-medium text-zen-700 mb-4">Shared Context</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="user-id" className="block text-sm font-medium mb-1">
+              <label htmlFor="user-id" className="block text-sm font-medium text-zen-600 mb-1">
                 User ID
               </label>
               <div className="flex gap-2">
@@ -287,13 +287,13 @@ export default function AmplitudeApiTesterPage() {
                   id="user-id"
                   value={userId}
                   onChange={(event) => setUserId(event.target.value)}
-                  className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+                  className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
                   placeholder="Enter a user id"
                 />
                 <button
                   type="button"
                   onClick={() => setUserId(getRandomId())}
-                  className="whitespace-nowrap bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-3 py-2 rounded-md transition"
+                  className="whitespace-nowrap bg-matcha-500 hover:bg-matcha-600 text-white text-sm font-medium px-3 py-2 rounded-lg transition"
                 >
                   Random ID
                 </button>
@@ -301,7 +301,7 @@ export default function AmplitudeApiTesterPage() {
             </div>
 
             <div>
-              <label htmlFor="device-id" className="block text-sm font-medium mb-1">
+              <label htmlFor="device-id" className="block text-sm font-medium text-zen-600 mb-1">
                 Device ID
               </label>
               <div className="flex gap-2">
@@ -309,13 +309,13 @@ export default function AmplitudeApiTesterPage() {
                   id="device-id"
                   value={deviceId}
                   onChange={(event) => setDeviceId(event.target.value)}
-                  className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+                  className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
                   placeholder="Enter a device id"
                 />
                 <button
                   type="button"
                   onClick={() => setDeviceId(getRandomId())}
-                  className="whitespace-nowrap bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-3 py-2 rounded-md transition"
+                  className="whitespace-nowrap bg-matcha-500 hover:bg-matcha-600 text-white text-sm font-medium px-3 py-2 rounded-lg transition"
                 >
                   Random ID
                 </button>
@@ -323,48 +323,48 @@ export default function AmplitudeApiTesterPage() {
             </div>
 
             <div>
-              <label htmlFor="api-key" className="block text-sm font-medium mb-1">
+              <label htmlFor="api-key" className="block text-sm font-medium text-zen-600 mb-1">
                 API Key (HTTP/Batch)
               </label>
               <input
                 id="api-key"
                 value={apiKey}
                 onChange={(event) => setApiKey(event.target.value)}
-                className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+                className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
                 placeholder="Amplitude API key"
               />
             </div>
 
             <div>
-              <label htmlFor="time" className="block text-sm font-medium mb-1">
+              <label htmlFor="time" className="block text-sm font-medium text-zen-600 mb-1">
                 Current Time
               </label>
               <input
                 id="time"
                 value={`${formatIso(currentTimeMs)} (auto-updated on send)`}
                 readOnly
-                className="w-full rounded-md border border-gray-200 dark:border-zinc-700 p-2 text-sm bg-gray-100 dark:bg-zinc-700"
+                className="w-full rounded-lg border border-zen-200 bg-zen-200 p-2 text-sm text-zen-500"
               />
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Identify</h2>
-            <label htmlFor="identify-props" className="block text-sm font-medium mb-1">
+          <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
+            <h2 className="text-lg font-medium text-zen-700 mb-4">Identify</h2>
+            <label htmlFor="identify-props" className="block text-sm font-medium text-zen-600 mb-1">
               User Properties (JSON)
             </label>
             <textarea
               id="identify-props"
               value={identifyPropsJson}
               onChange={(event) => setIdentifyPropsJson(event.target.value)}
-              className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700 min-h-[120px]"
+              className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 min-h-[120px]"
             />
             <button
               type="button"
               onClick={handleIdentify}
-              className="mt-4 bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-md transition"
+              className="mt-4 bg-matcha-500 hover:bg-matcha-600 text-white font-medium px-4 py-2 rounded-lg transition"
             >
               Send Identify
             </button>
@@ -372,45 +372,45 @@ export default function AmplitudeApiTesterPage() {
             {renderStatus(status.identify)}
           </div>
 
-          <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Group Identify</h2>
+          <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
+            <h2 className="text-lg font-medium text-zen-700 mb-4">Group Identify</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label htmlFor="group-type" className="block text-sm font-medium mb-1">
+                <label htmlFor="group-type" className="block text-sm font-medium text-zen-600 mb-1">
                   Group Type
                 </label>
                 <input
                   id="group-type"
                   value={groupType}
                   onChange={(event) => setGroupType(event.target.value)}
-                  className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+                  className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                 />
               </div>
               <div>
-                <label htmlFor="group-name" className="block text-sm font-medium mb-1">
+                <label htmlFor="group-name" className="block text-sm font-medium text-zen-600 mb-1">
                   Group Name
                 </label>
                 <input
                   id="group-name"
                   value={groupName}
                   onChange={(event) => setGroupName(event.target.value)}
-                  className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+                  className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                 />
               </div>
             </div>
-            <label htmlFor="group-props" className="block text-sm font-medium mb-1">
+            <label htmlFor="group-props" className="block text-sm font-medium text-zen-600 mb-1">
               Group Properties (JSON)
             </label>
             <textarea
               id="group-props"
               value={groupPropsJson}
               onChange={(event) => setGroupPropsJson(event.target.value)}
-              className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700 min-h-[120px]"
+              className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 min-h-[120px]"
             />
             <button
               type="button"
               onClick={handleGroupIdentify}
-              className="mt-4 bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-md transition"
+              className="mt-4 bg-matcha-500 hover:bg-matcha-600 text-white font-medium px-4 py-2 rounded-lg transition"
             >
               Send Group Identify
             </button>
@@ -420,30 +420,30 @@ export default function AmplitudeApiTesterPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">HTTP API</h2>
-            <label htmlFor="http-event-type" className="block text-sm font-medium mb-1">
+          <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
+            <h2 className="text-lg font-medium text-zen-700 mb-4">HTTP API</h2>
+            <label htmlFor="http-event-type" className="block text-sm font-medium text-zen-600 mb-1">
               Event Type
             </label>
             <input
               id="http-event-type"
               value={httpEventType}
               onChange={(event) => setHttpEventType(event.target.value)}
-              className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700 mb-4"
+              className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 mb-4"
             />
-            <label htmlFor="http-event-props" className="block text-sm font-medium mb-1">
+            <label htmlFor="http-event-props" className="block text-sm font-medium text-zen-600 mb-1">
               Event Properties (JSON)
             </label>
             <textarea
               id="http-event-props"
               value={httpEventPropsJson}
               onChange={(event) => setHttpEventPropsJson(event.target.value)}
-              className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700 min-h-[120px]"
+              className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 min-h-[120px]"
             />
             <button
               type="button"
               onClick={handleHttpApi}
-              className="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-4 py-2 rounded-md transition"
+              className="mt-4 bg-matcha-600 hover:bg-matcha-700 text-white font-medium px-4 py-2 rounded-lg transition"
             >
               Send HTTP API Event
             </button>
@@ -451,30 +451,30 @@ export default function AmplitudeApiTesterPage() {
             {renderStatus(status.http)}
           </div>
 
-          <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Batch API</h2>
-            <label htmlFor="batch-event-type" className="block text-sm font-medium mb-1">
+          <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
+            <h2 className="text-lg font-medium text-zen-700 mb-4">Batch API</h2>
+            <label htmlFor="batch-event-type" className="block text-sm font-medium text-zen-600 mb-1">
               Event Type
             </label>
             <input
               id="batch-event-type"
               value={batchEventType}
               onChange={(event) => setBatchEventType(event.target.value)}
-              className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700 mb-4"
+              className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 mb-4"
             />
-            <label htmlFor="batch-event-props" className="block text-sm font-medium mb-1">
+            <label htmlFor="batch-event-props" className="block text-sm font-medium text-zen-600 mb-1">
               Event Properties (JSON)
             </label>
             <textarea
               id="batch-event-props"
               value={batchEventPropsJson}
               onChange={(event) => setBatchEventPropsJson(event.target.value)}
-              className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700 min-h-[120px]"
+              className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 min-h-[120px]"
             />
             <button
               type="button"
               onClick={handleBatchApi}
-              className="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-4 py-2 rounded-md transition"
+              className="mt-4 bg-matcha-600 hover:bg-matcha-700 text-white font-medium px-4 py-2 rounded-lg transition"
             >
               Send Batch API Event
             </button>

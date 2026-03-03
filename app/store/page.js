@@ -286,17 +286,10 @@ export default function StorePage() {
   }, [checkoutStep]);
 
   return (
-    <>
-      <main className="flex min-h-screen flex-col items-center justify-between p-24">
-        <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-          <p className="amp-unmask fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-            This is unmasked.
-          </p>
-        </div>
-        <br />
-
-        <div className="w-full max-w-6xl bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg mb-10">
-          <h2 className="text-2xl font-semibold mb-6">E-commerce Store</h2>
+    <div className="min-h-screen py-10">
+      <div className="max-w-6xl mx-auto px-6 space-y-6">
+        <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
+          <h2 className="text-2xl font-light tracking-wide text-zen-700 mb-6">E-commerce Store</h2>
           
           {/* Search Bar */}
           <div className="mb-6">
@@ -305,7 +298,7 @@ export default function StorePage() {
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+              className="w-full max-w-md rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 placeholder:text-zen-400 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
             />
           </div>
 
@@ -313,7 +306,7 @@ export default function StorePage() {
           <div className="fixed top-4 right-4 z-50">
             <button
               onClick={() => setShowCart(!showCart)}
-              className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg flex items-center space-x-2"
+              className="bg-matcha-500 hover:bg-matcha-600 text-white p-3 rounded-full shadow-lg flex items-center space-x-2"
             >
               <span>🛒</span>
               <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
@@ -324,40 +317,40 @@ export default function StorePage() {
 
           {/* Cart Sidebar */}
           {showCart && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setShowCart(false)}>
-              <div className="fixed right-0 top-0 h-full w-80 bg-white dark:bg-zinc-800 shadow-xl p-6 overflow-y-auto">
+            <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setShowCart(false)}>
+              <div className="fixed right-0 top-0 h-full w-80 bg-[#0d0b1e]/95 glass shadow-xl p-6 overflow-y-auto">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Shopping Cart</h3>
                   <button
                     onClick={() => setShowCart(false)}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    className="text-zen-500 hover:text-zen-700"
                   >
                     ✕
                   </button>
                 </div>
                 
                 {cart.length === 0 ? (
-                  <p className="text-gray-500 dark:text-gray-400">Your cart is empty</p>
+                  <p className="text-zen-500">Your cart is empty</p>
                 ) : (
                   <>
                     <div className="space-y-4 mb-4">
                       {cart.map(item => (
-                        <div key={item.id} className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-zinc-600 rounded">
+                        <div key={item.id} className="flex items-center space-x-3 p-3 border border-zen-200 rounded">
                           <span className="text-2xl">{item.image}</span>
                           <div className="flex-1">
                             <h4 className="font-medium text-sm">{item.name}</h4>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">${item.price}</p>
+                            <p className="text-zen-500 text-sm">${item.price}</p>
                             <div className="flex items-center space-x-2 mt-1">
                               <button
                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                className="w-6 h-6 bg-gray-200 dark:bg-zinc-600 rounded text-xs"
+                                className="w-6 h-6 bg-zen-200 rounded text-xs"
                               >
                                 -
                               </button>
                               <span className="text-sm">{item.quantity}</span>
                               <button
                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                className="w-6 h-6 bg-gray-200 dark:bg-zinc-600 rounded text-xs"
+                                className="w-6 h-6 bg-zen-200 rounded text-xs"
                               >
                                 +
                               </button>
@@ -373,13 +366,13 @@ export default function StorePage() {
                       ))}
                     </div>
                     
-                    <div className="border-t border-gray-200 dark:border-zinc-600 pt-4">
+                    <div className="border-t border-zen-200 pt-4">
                       <div className="flex justify-between items-center mb-4">
                         <span className="font-semibold">Total: ${cartTotal.toFixed(2)}</span>
                       </div>
                       <button
                         onClick={startCheckout}
-                        className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
+                        className="w-full bg-matcha-500 hover:bg-matcha-600 text-white py-2 px-4 rounded-lg"
                       >
                         Checkout
                       </button>
@@ -393,22 +386,22 @@ export default function StorePage() {
           {/* Product Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map(product => (
-              <div key={product.id} className="border border-gray-200 dark:border-zinc-600 rounded-lg p-4 hover:shadow-lg transition-shadow">
+              <div key={product.id} className="border border-zen-200 rounded-xl p-4 bg-zen-100 glass-subtle hover:border-zen-300 transition-shadow">
                 <div className="text-4xl text-center mb-3">{product.image}</div>
                 <h3 className="font-semibold mb-2">{product.name}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{product.category}</p>
-                <p className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-3">${product.price}</p>
-                <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">{product.description}</p>
+                <p className="text-zen-600 text-sm mb-2">{product.category}</p>
+                <p className="text-matcha-400 font-bold mb-3">${product.price}</p>
+                <p className="text-zen-500 text-sm mb-4 line-clamp-2">{product.description}</p>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => viewProduct(product)}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-gray-800 dark:text-gray-200 py-2 px-3 rounded text-sm"
+                    className="flex-1 bg-zen-200 hover:bg-zen-300 text-zen-800 py-2 px-3 rounded text-sm"
                   >
                     View Details
                   </button>
                   <button
                     onClick={() => addToCart(product)}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded text-sm"
+                    className="flex-1 bg-matcha-500 hover:bg-matcha-600 text-white py-2 px-3 rounded text-sm"
                   >
                     Add to Cart
                   </button>
@@ -419,22 +412,22 @@ export default function StorePage() {
 
           {/* Product Detail Modal */}
           {selectedProduct && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-zen-100 glass-card rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-2xl font-semibold">{selectedProduct.name}</h3>
                   <button
                     onClick={closeProductDetail}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    className="text-zen-500 hover:text-zen-700"
                   >
                     ✕
                   </button>
                 </div>
                 
                 <div className="text-6xl text-center mb-4">{selectedProduct.image}</div>
-                <p className="text-gray-600 dark:text-gray-400 mb-2">{selectedProduct.category}</p>
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-4">${selectedProduct.price}</p>
-                <p className="text-gray-700 dark:text-gray-300 mb-6">{selectedProduct.description}</p>
+                <p className="text-zen-600 mb-2">{selectedProduct.category}</p>
+                <p className="text-3xl font-bold text-matcha-400 mb-4">${selectedProduct.price}</p>
+                <p className="text-zen-700 mb-6">{selectedProduct.description}</p>
                 
                 <div className="flex space-x-4">
                   <button
@@ -442,13 +435,13 @@ export default function StorePage() {
                       addToCart(selectedProduct);
                       closeProductDetail();
                     }}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold"
+                    className="flex-1 bg-matcha-500 hover:bg-matcha-600 text-white py-3 px-6 rounded-lg font-semibold"
                   >
                     Add to Cart
                   </button>
                   <button
                     onClick={closeProductDetail}
-                    className="px-6 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700"
+                    className="px-6 py-3 border border-zen-300 rounded-lg hover:bg-zen-100"
                   >
                     Close
                   </button>
@@ -459,8 +452,8 @@ export default function StorePage() {
 
           {/* Checkout Flow */}
           {checkoutStep > 0 && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-md w-full p-6">
+            <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-zen-100 glass-card rounded-2xl max-w-md w-full p-6">
                 <h3 className="text-xl font-semibold mb-4">Checkout - {getCheckoutStepName(checkoutStep)}</h3>
                 
                 {checkoutStep === 1 && (
@@ -469,7 +462,7 @@ export default function StorePage() {
                       <label className="block text-sm font-medium mb-1">Full Name</label>
                       <input
                         type="text"
-                        className="w-full p-2 border border-gray-300 dark:border-zinc-600 rounded dark:bg-zinc-700 dark:text-white"
+                        className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 placeholder:text-zen-400 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                         value={checkoutData.name || ''}
                         onChange={(e) => setCheckoutData({...checkoutData, name: e.target.value})}
                       />
@@ -478,7 +471,7 @@ export default function StorePage() {
                       <label className="block text-sm font-medium mb-1">Email</label>
                       <input
                         type="email"
-                        className="w-full p-2 border border-gray-300 dark:border-zinc-600 rounded dark:bg-zinc-700 dark:text-white"
+                        className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 placeholder:text-zen-400 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                         value={checkoutData.email || ''}
                         onChange={(e) => setCheckoutData({...checkoutData, email: e.target.value})}
                       />
@@ -487,7 +480,7 @@ export default function StorePage() {
                       <label className="block text-sm font-medium mb-1">Phone</label>
                       <input
                         type="tel"
-                        className="w-full p-2 border border-gray-300 dark:border-zinc-600 rounded dark:bg-zinc-700 dark:text-white"
+                        className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 placeholder:text-zen-400 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                         value={checkoutData.phone || ''}
                         onChange={(e) => setCheckoutData({...checkoutData, phone: e.target.value})}
                       />
@@ -501,7 +494,7 @@ export default function StorePage() {
                       <label className="block text-sm font-medium mb-1">Address</label>
                       <input
                         type="text"
-                        className="w-full p-2 border border-gray-300 dark:border-zinc-600 rounded dark:bg-zinc-700 dark:text-white"
+                        className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 placeholder:text-zen-400 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                         value={checkoutData.address || ''}
                         onChange={(e) => setCheckoutData({...checkoutData, address: e.target.value})}
                       />
@@ -511,7 +504,7 @@ export default function StorePage() {
                         <label className="block text-sm font-medium mb-1">City</label>
                         <input
                           type="text"
-                          className="w-full p-2 border border-gray-300 dark:border-zinc-600 rounded dark:bg-zinc-700 dark:text-white"
+                          className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 placeholder:text-zen-400 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                           value={checkoutData.city || ''}
                           onChange={(e) => setCheckoutData({...checkoutData, city: e.target.value})}
                         />
@@ -520,7 +513,7 @@ export default function StorePage() {
                         <label className="block text-sm font-medium mb-1">ZIP Code</label>
                         <input
                           type="text"
-                          className="w-full p-2 border border-gray-300 dark:border-zinc-600 rounded dark:bg-zinc-700 dark:text-white"
+                          className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 placeholder:text-zen-400 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                           value={checkoutData.zip || ''}
                           onChange={(e) => setCheckoutData({...checkoutData, zip: e.target.value})}
                         />
@@ -536,7 +529,7 @@ export default function StorePage() {
                       <input
                         type="text"
                         placeholder="1234 5678 9012 3456"
-                        className="w-full p-2 border border-gray-300 dark:border-zinc-600 rounded dark:bg-zinc-700 dark:text-white"
+                        className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 placeholder:text-zen-400 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                         value={checkoutData.cardNumber || ''}
                         onChange={(e) => setCheckoutData({...checkoutData, cardNumber: e.target.value})}
                       />
@@ -547,7 +540,7 @@ export default function StorePage() {
                         <input
                           type="text"
                           placeholder="MM/YY"
-                          className="w-full p-2 border border-gray-300 dark:border-zinc-600 rounded dark:bg-zinc-700 dark:text-white"
+                          className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 placeholder:text-zen-400 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                           value={checkoutData.expiry || ''}
                           onChange={(e) => setCheckoutData({...checkoutData, expiry: e.target.value})}
                         />
@@ -557,7 +550,7 @@ export default function StorePage() {
                         <input
                           type="text"
                           placeholder="123"
-                          className="w-full p-2 border border-gray-300 dark:border-zinc-600 rounded dark:bg-zinc-700 dark:text-white"
+                          className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm text-zen-800 placeholder:text-zen-400 focus:outline-none focus:ring-1 focus:ring-matcha-500/50"
                           value={checkoutData.cvv || ''}
                           onChange={(e) => setCheckoutData({...checkoutData, cvv: e.target.value})}
                         />
@@ -577,7 +570,7 @@ export default function StorePage() {
                         </div>
                       ))}
                     </div>
-                    <div className="border-t border-gray-200 dark:border-zinc-600 pt-2">
+                    <div className="border-t border-zen-200 pt-2">
                       <div className="flex justify-between font-semibold">
                         <span>Total</span>
                         <span>${cartTotal.toFixed(2)}</span>
@@ -590,7 +583,7 @@ export default function StorePage() {
                   {checkoutStep > 1 && (
                     <button
                       onClick={prevCheckoutStep}
-                      className="px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded hover:bg-gray-50 dark:hover:bg-zinc-700"
+                      className="border border-zen-300 rounded-lg hover:bg-zen-100 px-4 py-2"
                     >
                       Previous
                     </button>
@@ -599,14 +592,14 @@ export default function StorePage() {
                   {checkoutStep < 4 ? (
                     <button
                       onClick={nextCheckoutStep}
-                      className="ml-auto bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                      className="ml-auto bg-matcha-500 hover:bg-matcha-600 text-white px-4 py-2 rounded"
                     >
                       Next
                     </button>
                   ) : (
                     <button
                       onClick={completePurchase}
-                      className="ml-auto bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                      className="ml-auto bg-matcha-600 hover:bg-matcha-700 text-white px-4 py-2 rounded"
                     >
                       Complete Purchase
                     </button>
@@ -616,7 +609,7 @@ export default function StorePage() {
             </div>
           )}
         </div>
-      </main>
-    </>
+      </div>
+    </div>
   );
 }

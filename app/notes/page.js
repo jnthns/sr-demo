@@ -133,7 +133,7 @@ function EditableWithLinks({ value, onChange, onKeyDown, placeholder, className,
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="text-matcha-600 hover:text-matcha-700 underline decoration-matcha-300"
+            className="text-matcha-400 hover:text-matcha-300 underline decoration-matcha-400/30"
           >
             {part}
           </a>
@@ -336,12 +336,12 @@ export default function NotesPage() {
   if (!isHydrated) return null;
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col overflow-hidden bg-zen-50 text-zen-800">
+    <div className="h-screen flex flex-col overflow-hidden text-zen-800">
       <div className="flex items-center justify-between px-6 py-4 flex-shrink-0 border-b border-zen-200">
         <h1 className="text-2xl font-light tracking-wide text-zen-700">Account Notes</h1>
         <button
           onClick={addAccount}
-          className="bg-matcha-500 hover:bg-matcha-600 text-white text-sm font-medium px-4 py-2 rounded-full transition shadow-sm"
+          className="bg-gradient-to-r from-matcha-500 to-glow-500 hover:bg-matcha-600 text-white text-sm font-medium px-4 py-2 rounded-full transition shadow-sm"
         >
           + Add Account
         </button>
@@ -501,7 +501,7 @@ function AccountCard({
   };
 
   return (
-    <div className="bg-zen-100 rounded-2xl border border-zen-200 shadow-sm overflow-hidden animate-fade-slide-in">
+    <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 overflow-hidden animate-fade-slide-in">
       {/* Card header */}
       <div className="flex items-center gap-2 px-4 py-3 bg-zen-100 border-b border-zen-200">
         <button
@@ -536,7 +536,7 @@ function AccountCard({
           onChange={(e) =>
             onUpdate((a) => ({ ...a, name: e.target.value }))
           }
-          className="flex-1 min-w-0 bg-transparent font-medium text-base text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-400 rounded px-1 -mx-1"
+          className="flex-1 min-w-0 bg-transparent font-medium text-base text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded px-2 py-1 -mx-1"
           placeholder="Account name"
         />
 
@@ -598,7 +598,7 @@ function AccountCard({
         }`}
       >
         <div className="overflow-hidden">
-          <div className="px-4 py-3 space-y-1 max-h-80 overflow-y-auto bg-zen-50/60">
+          <div className="px-4 py-3 space-y-2 max-h-96 overflow-y-auto bg-zen-50">
             {account.tasks.length === 0 && (
               <p className="text-xs text-zen-400 py-2 font-light">
                 No tasks yet.
@@ -642,7 +642,7 @@ function AccountCard({
 
             <button
               onClick={onAddTask}
-              className="text-xs text-matcha-600 hover:text-matcha-700 font-medium pt-1"
+              className="text-xs text-matcha-400 hover:text-matcha-300 font-medium pt-1"
             >
               + Add task
             </button>
@@ -695,7 +695,7 @@ function TaskRow({
   const handleTaskKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onAddTaskAfter();
+      onAddSubtask();
     } else if (e.key === 'Tab' && !e.shiftKey) {
       e.preventDefault();
       onIndentTask();
@@ -724,12 +724,12 @@ function TaskRow({
 
   return (
     <div className="group animate-fade-slide-in">
-      <div className="flex items-start gap-1.5 py-1">
+      <div className="flex items-start gap-2 py-2">
         {/* Drag handle */}
         <button
           {...dragListeners}
           {...dragAttributes}
-          className="flex-shrink-0 mt-0.5 text-zen-300 hover:text-zen-500 transition cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"
+          className="flex-shrink-0 mt-1 text-zen-300 hover:text-zen-500 transition cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"
           aria-label="Drag to reorder"
         >
           <GripIcon small />
@@ -738,7 +738,7 @@ function TaskRow({
         {/* Expand subtasks toggle */}
         <button
           onClick={toggleCollapsed}
-          className={`flex-shrink-0 w-4 h-4 mt-0.5 flex items-center justify-center text-zen-300 ${
+          className={`flex-shrink-0 w-4 h-4 mt-1 flex items-center justify-center text-zen-300 ${
             hasSubtasks ? 'hover:text-zen-600' : ''
           }`}
           disabled={!hasSubtasks}
@@ -766,7 +766,7 @@ function TaskRow({
           type="checkbox"
           checked={task.completed}
           onChange={toggleCompleted}
-          className="flex-shrink-0 w-3.5 h-3.5 mt-0.5 rounded border-zen-300 text-matcha-500 focus:ring-matcha-400 cursor-pointer accent-matcha-500"
+          className="flex-shrink-0 w-4 h-4 mt-1 rounded border-zen-300 text-matcha-500 focus:ring-matcha-500/50 cursor-pointer accent-matcha-500"
         />
 
         {/* Title */}
@@ -776,10 +776,10 @@ function TaskRow({
           onKeyDown={handleTaskKeyDown}
           placeholder="Task title"
           focusId={task.id}
-          className={`flex-1 min-w-0 text-sm break-words px-1 -mx-1 ${
+          className={`flex-1 min-w-0 text-sm break-words px-2 py-1 -mx-1 ${
             task.completed ? 'line-through text-zen-400' : 'text-zen-800'
           }`}
-          inputClassName={`flex-1 min-w-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-matcha-400 rounded px-1 -mx-1 ${
+          inputClassName={`flex-1 min-w-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded px-2 py-1 -mx-1 ${
             task.completed ? 'line-through text-zen-400' : 'text-zen-800'
           }`}
         />
@@ -817,7 +817,7 @@ function TaskRow({
             }
           }}
           placeholder="Assign"
-          className="flex-shrink-0 w-16 bg-transparent text-xs text-zen-600 focus:outline-none focus:ring-1 focus:ring-matcha-400 rounded border border-transparent focus:border-zen-300 px-1 placeholder:text-zen-300"
+          className="flex-shrink-0 w-20 bg-transparent text-xs text-zen-600 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded border border-transparent focus:border-zen-300 px-2 py-1.5 placeholder:text-zen-300"
         />
 
         {/* Add subtask */}
@@ -857,11 +857,11 @@ function TaskRow({
       >
         <div className="overflow-hidden">
           {hasSubtasks && (
-            <div className="ml-6 border-l border-zen-200 pl-3 space-y-0.5">
+            <div className="ml-10 border-l-2 border-zen-300 pl-4 space-y-1 mt-1">
               {task.subtasks.map((sub) => (
                 <div
                   key={sub.id}
-                  className="flex items-start gap-1.5 py-0.5 group/sub animate-fade-slide-in"
+                  className="flex items-start gap-2 py-1.5 group/sub animate-fade-slide-in"
                 >
                   <input
                     type="checkbox"
@@ -869,7 +869,7 @@ function TaskRow({
                     onChange={() =>
                       onUpdateSubtask(sub.id, { completed: !sub.completed })
                     }
-                    className="flex-shrink-0 w-3 h-3 mt-0.5 rounded border-zen-300 text-matcha-500 focus:ring-matcha-400 cursor-pointer accent-matcha-500"
+                    className="flex-shrink-0 w-3.5 h-3.5 mt-0.5 rounded border-zen-300 text-matcha-500 focus:ring-matcha-500/50 cursor-pointer accent-matcha-500"
                   />
                   <EditableWithLinks
                     value={sub.title}
@@ -879,12 +879,12 @@ function TaskRow({
                     onKeyDown={handleSubtaskKeyDown(sub.id, sub.title)}
                     placeholder="Subtask"
                     focusId={sub.id}
-                    className={`flex-1 min-w-0 text-xs break-words px-1 -mx-1 ${
+                    className={`flex-1 min-w-0 text-xs break-words px-2 py-1 -mx-1 ${
                       sub.completed
                         ? 'line-through text-zen-400'
                         : 'text-zen-600'
                     }`}
-                    inputClassName={`flex-1 min-w-0 bg-transparent text-xs focus:outline-none focus:ring-1 focus:ring-matcha-400 rounded px-1 -mx-1 ${
+                    inputClassName={`flex-1 min-w-0 bg-transparent text-xs focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded px-2 py-1 -mx-1 ${
                       sub.completed
                         ? 'line-through text-zen-400'
                         : 'text-zen-600'

@@ -6,7 +6,7 @@ import { logEvent } from "../../lib/amplitude"
 
 const MarkdownRenderer = dynamic(() => import("../components/MarkdownRenderer"), {
   ssr: false,
-  loading: () => <p className="text-sm text-gray-500 dark:text-gray-400">Loading message...</p>
+  loading: () => <p className="text-sm text-zen-500">Loading message...</p>
 });
 
 export default function FileSearchPage() {
@@ -510,273 +510,271 @@ I'll provide answers with citations from your uploaded files.`,
   };
 
   return (
-    <>
-      <main className="flex min-h-screen flex-col p-6">
-        <div className="max-w-7xl mx-auto w-full">
-          <h1 className="text-3xl font-bold mb-6">File Search (RAG) Assistant</h1>
+    <div className="min-h-screen py-6">
+      <div className="max-w-7xl mx-auto w-full px-6">
+        <h1 className="text-2xl font-light tracking-wide text-zen-700 mb-6">File Search (RAG) Assistant</h1>
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg">
-              <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
-            </div>
-          )}
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-red-300 text-sm">{error}</p>
+          </div>
+        )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Panel - File Management */}
-            <div className="lg:col-span-1 space-y-4">
-              <div className="bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">File Search Stores</h2>
-                  <button
-                    onClick={() => setShowCreateStoreModal(true)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium"
-                  >
-                    + New Store
-                  </button>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Panel - File Management */}
+          <div className="lg:col-span-1 space-y-4">
+            <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">File Search Stores</h2>
+                <button
+                  onClick={() => setShowCreateStoreModal(true)}
+                  className="bg-matcha-500 hover:bg-matcha-600 text-white px-3 py-1 rounded text-sm font-medium"
+                >
+                  + New Store
+                </button>
+              </div>
 
-                {/* Store Selector */}
-                <div className="space-y-2 mb-4">
-                  {stores.length === 0 ? (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      No stores yet. Create one to get started!
-                    </p>
-                  ) : (
-                    stores.map((store) => (
-                      <div
-                        key={store.name}
-                        className={`p-3 rounded-lg border cursor-pointer transition ${
-                          selectedStore === store.name
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600'
-                        }`}
-                        onClick={() => setSelectedStore(store.name)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{store.displayName || 'Unnamed Store'}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                              {store.name}
-                            </p>
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteStore(store.name);
-                            }}
-                            className="text-red-500 hover:text-red-700 text-xs ml-2"
-                          >
-                            ✕
-                          </button>
+              {/* Store Selector */}
+              <div className="space-y-2 mb-4">
+                {stores.length === 0 ? (
+                  <p className="text-sm text-zen-500">
+                    No stores yet. Create one to get started!
+                  </p>
+                ) : (
+                  stores.map((store) => (
+                    <div
+                      key={store.name}
+                      className={`p-3 rounded-lg border cursor-pointer transition ${
+                        selectedStore === store.name
+                          ? 'border-matcha-500/50 bg-matcha-100'
+                          : 'border-zen-200 hover:border-zen-300'
+                      }`}
+                      onClick={() => setSelectedStore(store.name)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{store.displayName || 'Unnamed Store'}</p>
+                          <p className="text-xs text-zen-500 truncate">
+                            {store.name}
+                          </p>
                         </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteStore(store.name);
+                          }}
+                          className="text-red-500 hover:text-red-700 text-xs ml-2"
+                        >
+                          ✕
+                        </button>
                       </div>
-                    ))
-                  )}
-                </div>
-
-                {/* File Upload Area */}
-                {selectedStore && (
-                  <div
-                    className={`border-2 border-dashed rounded-lg p-6 text-center transition ${
-                      isDragging
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600'
-                    }`}
-                    onDragEnter={handleDragEnter}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      onChange={handleFileInputChange}
-                      className="hidden"
-                    />
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {isDragging ? 'Drop files here' : 'Drag & drop files or'}
-                      </p>
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                        className="bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded text-sm font-medium disabled:opacity-50"
-                      >
-                        {isUploading ? 'Uploading...' : 'Browse Files'}
-                      </button>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Max 100MB per file
-                      </p>
                     </div>
-                  </div>
+                  ))
                 )}
+              </div>
 
-                {/* Upload Progress */}
-                {Object.keys(uploadProgress).length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <p className="text-sm font-medium mb-2">Upload Status</p>
-                    {Object.entries(uploadProgress).map(([operationName, progress]) => (
-                      <div key={operationName} className="text-xs">
-                        <div className="flex justify-between mb-1">
-                          <span className="truncate">{progress.fileName}</span>
-                          <span className={progress.done ? 'text-green-600' : 'text-blue-600'}>
-                            {progress.done ? '✓ Indexed' : progress.error ? '✗ Error' : '⏳ Processing...'}
-                          </span>
-                        </div>
-                        {!progress.done && !progress.error && (
-                          <div className="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-1">
-                            <div className="bg-blue-600 h-1 rounded-full animate-pulse" style={{ width: '60%' }}></div>
-                          </div>
-                        )}
-                        {progress.error && (
-                          <p className="text-red-500 text-xs mt-1">{progress.error}</p>
-                        )}
+              {/* File Upload Area */}
+              {selectedStore && (
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition ${
+                    isDragging
+                      ? 'border-matcha-400 bg-matcha-100'
+                      : 'border-zen-300 hover:border-zen-400'
+                  }`}
+                  onDragEnter={handleDragEnter}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    onChange={handleFileInputChange}
+                    className="hidden"
+                  />
+                  <div className="space-y-2">
+                    <p className="text-sm text-zen-600">
+                      {isDragging ? 'Drop files here' : 'Drag & drop files or'}
+                    </p>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="bg-zen-200 hover:bg-zen-300 text-zen-800 px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:bg-zen-300 disabled:cursor-not-allowed"
+                    >
+                      {isUploading ? 'Uploading...' : 'Browse Files'}
+                    </button>
+                    <p className="text-xs text-zen-500">
+                      Max 100MB per file
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Upload Progress */}
+              {Object.keys(uploadProgress).length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm font-medium mb-2">Upload Status</p>
+                  {Object.entries(uploadProgress).map(([operationName, progress]) => (
+                    <div key={operationName} className="text-xs">
+                      <div className="flex justify-between mb-1">
+                        <span className="truncate">{progress.fileName}</span>
+                        <span className={progress.done ? 'text-matcha-400' : progress.error ? 'text-red-500' : 'text-matcha-400'}>
+                          {progress.done ? '✓ Indexed' : progress.error ? '✗ Error' : '⏳ Processing...'}
+                        </span>
                       </div>
-                    ))}
+                      {!progress.done && !progress.error && (
+                        <div className="w-full bg-zen-200 rounded-full h-1">
+                          <div className="bg-matcha-500 h-1 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+                        </div>
+                      )}
+                      {progress.error && (
+                        <p className="text-red-500 text-xs mt-1">{progress.error}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Panel - Chat Interface */}
+          <div className="lg:col-span-2">
+            <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6 h-[calc(100vh-200px)] flex flex-col">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Chat with Documents</h2>
+                {selectedStore && (
+                  <div className="flex items-center space-x-2 text-sm text-zen-500">
+                    <span className="w-2 h-2 bg-matcha-500 rounded-full"></span>
+                    <span>File Search Active</span>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Right Panel - Chat Interface */}
-            <div className="lg:col-span-2">
-              <div className="bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-lg h-[calc(100vh-200px)] flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">Chat with Documents</h2>
-                  {selectedStore && (
-                    <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                      <span>File Search Active</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
-                  {messages.map((msg, index) => {
-                    const citations = formatCitations(msg.groundingMetadata);
-                    return (
-                      <div key={index} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
-                        <div className={`max-w-[80%] rounded-lg p-3 ${
-                          msg.sender === 'user'
-                            ? 'bg-blue-500 text-white rounded-br-sm'
-                            : msg.isError
-                            ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-700'
-                            : 'bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 rounded-bl-sm'
-                        }`}>
-                          {msg.sender === 'user' ? (
-                            <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
-                          ) : (
-                            <MarkdownRenderer
-                              className="text-sm prose prose-sm max-w-none dark:prose-invert"
-                              content={msg.text}
-                            />
-                          )}
-                        </div>
-                        
-                        {/* Citations */}
-                        {citations && (
-                          <div className="mt-2 max-w-[80%]">
-                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Sources:</p>
-                            <div className="space-y-1">
-                              {citations.map((citation, idx) => (
-                                <div key={idx} className="text-xs bg-gray-50 dark:bg-zinc-800 p-2 rounded border border-gray-200 dark:border-zinc-700">
-                                  <p className="font-medium">{citation.index}. {citation.title}</p>
-                                  {citation.chunk && (
-                                    <p className="text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                                      {citation.chunk}
-                                    </p>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
+                {messages.map((msg, index) => {
+                  const citations = formatCitations(msg.groundingMetadata);
+                  return (
+                    <div key={index} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className={`max-w-[80%] rounded-lg p-3 ${
+                        msg.sender === 'user'
+                          ? 'bg-gradient-to-r from-matcha-500 to-matcha-600 text-white rounded-br-sm'
+                          : msg.isError
+                          ? 'bg-red-500/10 text-red-300 border border-red-500/20'
+                          : 'bg-zen-100 text-zen-800 rounded-bl-sm'
+                      }`}>
+                        {msg.sender === 'user' ? (
+                          <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                        ) : (
+                          <MarkdownRenderer
+                            className="text-sm prose prose-sm max-w-none"
+                            content={msg.text}
+                          />
                         )}
                       </div>
-                    );
-                  })}
-                  
-                  {isLoading && (
-                    <div className="flex items-center space-x-2">
-                      <div className="bg-gray-100 dark:bg-zinc-700 p-3 rounded-lg rounded-bl-sm">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      
+                      {/* Citations */}
+                      {citations && (
+                        <div className="mt-2 max-w-[80%]">
+                          <p className="text-xs font-medium text-zen-600 mb-1">Sources:</p>
+                          <div className="space-y-1">
+                            {citations.map((citation, idx) => (
+                              <div key={idx} className="text-xs bg-zen-50 border border-zen-200 p-2 rounded">
+                                <p className="font-medium">{citation.index}. {citation.title}</p>
+                                {citation.chunk && (
+                                  <p className="text-zen-600 mt-1 line-clamp-2">
+                                    {citation.chunk}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
+                      )}
+                    </div>
+                  );
+                })}
+                
+                {isLoading && (
+                  <div className="flex items-center space-x-2">
+                    <div className="bg-zen-100 p-3 rounded-lg rounded-bl-sm">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-zen-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-zen-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-zen-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+              </div>
 
-                {/* Input Area */}
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                    className="flex-grow rounded-md border border-gray-300 shadow-sm p-3 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={selectedStore ? "Ask a question about your documents..." : "Select a store first..."}
-                    disabled={isLoading || !selectedStore}
-                  />
-                  <button
-                    onClick={handleSend}
-                    disabled={isLoading || !input.trim() || !selectedStore}
-                    className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-md transition flex items-center space-x-2"
-                  >
-                    <span>Send</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                  </button>
-                </div>
+              {/* Input Area */}
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  className="flex-grow rounded-lg border border-zen-300 bg-zen-100 p-3 text-zen-800 focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
+                  placeholder={selectedStore ? "Ask a question about your documents..." : "Select a store first..."}
+                  disabled={isLoading || !selectedStore}
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={isLoading || !input.trim() || !selectedStore}
+                  className="bg-matcha-500 hover:bg-matcha-600 disabled:bg-zen-300 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-md transition flex items-center space-x-2"
+                >
+                  <span>Send</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Create Store Modal */}
-        {showCreateStoreModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-md w-full p-6">
-              <h3 className="text-xl font-semibold mb-4">Create File Search Store</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Store Name</label>
-                  <input
-                    type="text"
-                    value={newStoreName}
-                    onChange={(e) => setNewStoreName(e.target.value)}
-                    className="w-full p-2 border border-gray-300 dark:border-zinc-600 rounded dark:bg-zinc-700 dark:text-white"
-                    placeholder="My Document Store"
-                    onKeyPress={(e) => e.key === 'Enter' && createStore()}
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <button
-                    onClick={() => {
-                      setShowCreateStoreModal(false);
-                      setNewStoreName('');
-                    }}
-                    className="px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded hover:bg-gray-50 dark:hover:bg-zinc-700"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={createStore}
-                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
-                  >
-                    Create
-                  </button>
-                </div>
+      {/* Create Store Modal */}
+      {showCreateStoreModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-zen-100 glass-card rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Create File Search Store</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Store Name</label>
+                <input
+                  type="text"
+                  value={newStoreName}
+                  onChange={(e) => setNewStoreName(e.target.value)}
+                  className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
+                  placeholder="My Document Store"
+                  onKeyPress={(e) => e.key === 'Enter' && createStore()}
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => {
+                    setShowCreateStoreModal(false);
+                    setNewStoreName('');
+                  }}
+                  className="px-4 py-2 border border-zen-300 rounded-lg hover:bg-zen-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={createStore}
+                  className="px-4 py-2 bg-matcha-500 hover:bg-matcha-600 text-white rounded-lg"
+                >
+                  Create
+                </button>
               </div>
             </div>
           </div>
-        )}
-      </main>
-    </>
+        </div>
+      )}
+    </div>
   );
 }
 

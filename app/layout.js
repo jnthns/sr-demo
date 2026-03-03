@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import Navigation from "./components/Navigation";
 import AnalyticsBootstrap from "./components/AnalyticsBootstrap";
+import SettingsProvider from "./components/SettingsProvider";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -45,10 +46,16 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className={inter.className}>
-        <Navigation />
-        <AnalyticsBootstrap />
-        {children}
+      <body className={`${inter.className} text-zen-800`}>
+        <SettingsProvider>
+          <div className="flex min-h-screen">
+            <Navigation />
+            <main className="flex-1 min-w-0 overflow-auto">
+              <AnalyticsBootstrap />
+              {children}
+            </main>
+          </div>
+        </SettingsProvider>
       </body>
     </html>
   );

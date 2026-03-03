@@ -6,17 +6,17 @@ export default function Home() {
   return (
     <>
       <ExperimentPageTracking />
-      <main className="flex min-h-screen flex-col items-center justify-between p-24">
-        <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-          <p className="amp-unmask fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-            This is unmasked.
-          </p>
+      <div className="min-h-screen py-10">
+        <div className="max-w-5xl mx-auto px-6 space-y-8">
+          <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
+            <p className="amp-unmask font-mono text-sm text-zen-600 bg-zen-200 rounded-xl px-4 py-3 inline-block">
+              This is unmasked.
+            </p>
+          </div>
+          <ExperimentControls />
+          <ExperimentStaticForm />
         </div>
-        <br />
-
-        <ExperimentControls />
-        <ExperimentStaticForm />
-      </main>
+      </div>
     </>
   )
 }

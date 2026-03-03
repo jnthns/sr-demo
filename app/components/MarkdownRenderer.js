@@ -3,11 +3,9 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 export default function MarkdownRenderer({ content, className, enableCopy = true }) {
-  const isDarkMode = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
-
   return (
     <div className={className}>
       <ReactMarkdown
@@ -16,9 +14,9 @@ export default function MarkdownRenderer({ content, className, enableCopy = true
           code: ({ inline, className: codeClassName, children, ...props }) => {
             const match = /language-(\w+)/.exec(codeClassName || '');
             return !inline && match ? (
-              <div className="rounded-md my-2 overflow-hidden relative group">
-                <div className="flex justify-between items-center px-3 py-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+              <div className="rounded-lg my-2 overflow-hidden relative group">
+                <div className="flex justify-between items-center px-3 py-2 bg-zen-200 border-b border-zen-300">
+                  <span className="text-xs text-zen-500 font-mono">
                     {match[1]}
                   </span>
                   {enableCopy && (
@@ -26,7 +24,7 @@ export default function MarkdownRenderer({ content, className, enableCopy = true
                       onClick={() => {
                         navigator.clipboard.writeText(String(children).replace(/\n$/, ''));
                       }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-zen-500 hover:text-zen-700"
                       title="Copy code"
                     >
                       Copy
@@ -34,14 +32,14 @@ export default function MarkdownRenderer({ content, className, enableCopy = true
                   )}
                 </div>
                 <SyntaxHighlighter
-                  style={isDarkMode ? oneDark : oneLight}
+                  style={oneDark}
                   language={match[1]}
                   PreTag="div"
                   className="!m-0 !p-3"
                   customStyle={{
                     margin: 0,
                     padding: '0.75rem',
-                    background: 'transparent',
+                    background: 'rgba(0, 0, 0, 0.3)',
                     fontSize: '0.875rem',
                     lineHeight: '1.5'
                   }}
@@ -50,35 +48,35 @@ export default function MarkdownRenderer({ content, className, enableCopy = true
                 </SyntaxHighlighter>
               </div>
             ) : (
-              <code className="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-xs" {...props}>
+              <code className="bg-zen-200 px-1 py-0.5 rounded text-xs" {...props}>
                 {children}
               </code>
             );
           },
           pre: ({ children }) => (
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-3 my-2 overflow-x-auto">
+            <div className="bg-zen-100 rounded-lg p-3 my-2 overflow-x-auto">
               <pre className="text-sm">{children}</pre>
             </div>
           ),
           blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 my-2 italic text-gray-600 dark:text-gray-400">
+            <blockquote className="border-l-4 border-zen-300 pl-4 my-2 italic text-zen-500">
               {children}
             </blockquote>
           ),
           table: ({ children }) => (
             <div className="overflow-x-auto my-2">
-              <table className="min-w-full border border-gray-300 dark:border-gray-600">
+              <table className="min-w-full border border-zen-300">
                 {children}
               </table>
             </div>
           ),
           th: ({ children }) => (
-            <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 bg-gray-100 dark:bg-gray-700 font-semibold text-left">
+            <th className="border border-zen-300 px-3 py-2 bg-zen-100 font-semibold text-left">
               {children}
             </th>
           ),
           td: ({ children }) => (
-            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">
+            <td className="border border-zen-300 px-3 py-2">
               {children}
             </td>
           ),
@@ -97,7 +95,7 @@ export default function MarkdownRenderer({ content, className, enableCopy = true
               href={href} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-matcha-400 hover:text-matcha-300 hover:underline"
             >
               {children}
             </a>
@@ -112,7 +110,7 @@ export default function MarkdownRenderer({ content, className, enableCopy = true
             <h3 className="text-sm font-bold my-2">{children}</h3>
           ),
           hr: () => (
-            <hr className="border-gray-300 dark:border-gray-600 my-3" />
+            <hr className="border-zen-300 my-3" />
           ),
         }}
       >

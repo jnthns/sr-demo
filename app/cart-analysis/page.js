@@ -252,7 +252,7 @@ function CartArrayBuilder({
       }
       const key = match[1];
       const isShared = otherKeys.has(key);
-      const lineClass = isShared ? 'text-gray-100' : 'text-red-400';
+      const lineClass = isShared ? 'text-zen-100' : 'text-red-400';
       return (
         <span key={index} className={lineClass}>
           {line}{'\n'}
@@ -262,15 +262,15 @@ function CartArrayBuilder({
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6 space-y-6">
+    <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">{title}</h2>
       </div>
 
-      <div className="space-y-4 rounded-lg border border-gray-200 dark:border-zinc-700 p-4">
+      <div className="space-y-4 rounded-lg border border-zen-200 p-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Import JSON</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <h3 className="text-sm font-semibold text-zen-700">Import JSON</h3>
+          <p className="text-xs text-zen-500">
             Paste a list of property keys to populate the form and preview.
           </p>
         </div>
@@ -278,13 +278,13 @@ function CartArrayBuilder({
           <textarea
             value={importValue}
             onChange={(event) => setImportValue(event.target.value)}
-            className="min-h-[140px] w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm font-mono dark:bg-zinc-700"
+            className="min-h-[140px] w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
             placeholder={`Example:\ncart_contents.category\ncart_contents.product_id\ncart_contents.product_name\ncart_contents.quantity\ncart_contents.discounted_price`}
           />
           {importError ? (
             <p className="text-xs text-red-500">{importError}</p>
           ) : (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-zen-500">
               Accepts one key per line (or comma-separated). A single parent prefix is supported.
             </p>
           )}
@@ -292,7 +292,7 @@ function CartArrayBuilder({
             <button
               type="button"
               onClick={handleApplyImport}
-              className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              className="rounded-md bg-matcha-500 px-3 py-2 text-sm font-semibold text-white hover:bg-matcha-600"
             >
               Apply JSON
             </button>
@@ -300,11 +300,11 @@ function CartArrayBuilder({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 rounded-lg border border-gray-200 dark:border-zinc-700 p-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 rounded-lg border border-zen-200 p-4 md:grid-cols-2">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Cart Value</label>
-            <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <label className="flex items-center gap-2 text-xs text-zen-500">
               <input
                 type="checkbox"
                 checked={autoCartValue}
@@ -319,18 +319,18 @@ function CartArrayBuilder({
               setCartValue(event.target.value === '' ? '' : Number(event.target.value));
               setAutoCartValue(false);
             }}
-            className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+            className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
             type="number"
             step="0.01"
           />
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-zen-500">
             Auto-calculated from quantity and price fields when enabled.
           </p>
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Total Items</label>
-            <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <label className="flex items-center gap-2 text-xs text-zen-500">
               <input
                 type="checkbox"
                 checked={autoTotalItems}
@@ -345,11 +345,11 @@ function CartArrayBuilder({
               setTotalItems(event.target.value === '' ? '' : Number(event.target.value));
               setAutoTotalItems(false);
             }}
-            className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+            className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
             type="number"
             step="1"
           />
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-zen-500">
             Auto-calculated from quantity fields when enabled.
           </p>
         </div>
@@ -357,7 +357,7 @@ function CartArrayBuilder({
 
       <div>
         <h3 className="text-lg font-semibold mb-3">JSON Preview</h3>
-        <pre className="whitespace-pre-wrap break-words rounded-lg bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto">
+        <pre className="whitespace-pre-wrap break-words rounded-lg bg-[#0d0b1e] text-zen-600 p-4 text-sm overflow-x-auto">
           {renderJsonPreview()}
         </pre>
       </div>
@@ -370,14 +370,14 @@ function CartArrayBuilder({
           id={`${title}-parent-key`}
           value={parentKey}
           onChange={(event) => setParentKey(event.target.value)}
-          className="w-full rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+          className="w-full rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
           placeholder="products"
         />
       </div>
 
       <div className="space-y-6">
         {items.map((fields, itemIndex) => (
-          <div key={`item-${itemIndex}`} className="border border-gray-200 dark:border-zinc-700 rounded-xl p-4">
+          <div key={`item-${itemIndex}`} className="border border-zen-200 rounded-xl p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Item {itemIndex + 1}</h3>
               {items.length > 1 && (
@@ -391,7 +391,7 @@ function CartArrayBuilder({
               )}
             </div>
 
-            <div className="grid grid-cols-[1fr_1fr_auto] gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
+            <div className="grid grid-cols-[1fr_1fr_auto] gap-2 text-xs text-zen-500 mb-2">
               <span>Key</span>
               <span>Value</span>
               <span></span>
@@ -403,7 +403,7 @@ function CartArrayBuilder({
                     key={`field-${itemIndex}-${fieldIndex}`}
                     className={`grid grid-cols-[1fr_1fr_auto] gap-2 items-center rounded-md ${
                       dragState?.itemIndex === itemIndex && dragState?.fieldIndex === fieldIndex
-                        ? 'bg-blue-50 dark:bg-blue-900/20'
+                        ? 'bg-matcha-100'
                         : ''
                     }`}
                     draggable
@@ -427,20 +427,20 @@ function CartArrayBuilder({
                   <input
                     value={field.key}
                     onChange={(event) => updateField(itemIndex, fieldIndex, { key: event.target.value })}
-                    className="rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+                    className="rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
                     placeholder="key"
                   />
                   <input
                     value={field.value}
                     onChange={(event) => updateField(itemIndex, fieldIndex, { value: event.target.value })}
-                    className="rounded-md border border-gray-300 dark:border-zinc-600 p-2 text-sm dark:bg-zinc-700"
+                    className="rounded-lg border border-zen-300 bg-zen-100 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-matcha-500/50 placeholder:text-zen-400"
                     placeholder="value"
                   />
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => duplicateField(itemIndex, fieldIndex)}
-                      className="p-2 rounded-md text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+                      className="p-2 rounded-md text-zen-500 hover:text-matcha-400 hover:bg-matcha-100"
                       aria-label="Duplicate field"
                       title="Duplicate field"
                     >
@@ -452,7 +452,7 @@ function CartArrayBuilder({
                     <button
                       type="button"
                       onClick={() => onDuplicateAcross(itemIndex, fieldIndex)}
-                      className="p-2 rounded-md text-gray-500 hover:text-purple-600 hover:bg-purple-50 dark:text-gray-400 dark:hover:text-purple-300 dark:hover:bg-purple-900/20"
+                      className="p-2 rounded-md text-zen-500 hover:text-zen-700 hover:bg-zen-200"
                       aria-label="Duplicate to other array"
                       title="Duplicate to other array"
                     >
@@ -465,7 +465,7 @@ function CartArrayBuilder({
                     <button
                       type="button"
                       onClick={() => removeField(itemIndex, fieldIndex)}
-                      className="p-2 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50 dark:text-gray-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                      className="p-2 rounded-md text-zen-500 hover:text-red-600 hover:bg-red-500/10"
                       aria-label="Remove field"
                       title="Remove field"
                     >
@@ -486,7 +486,7 @@ function CartArrayBuilder({
             <button
               type="button"
               onClick={() => addField(itemIndex)}
-              className="mt-3 text-sm text-blue-600 hover:text-blue-700"
+              className="mt-3 text-sm text-matcha-400 hover:text-matcha-300"
             >
               + Add field
             </button>
@@ -497,7 +497,7 @@ function CartArrayBuilder({
       <button
         type="button"
         onClick={addItem}
-        className="text-sm text-blue-600 hover:text-blue-700"
+        className="text-sm text-matcha-400 hover:text-matcha-300"
       >
         + Add item
       </button>
@@ -588,16 +588,16 @@ export default function CartAnalysisPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-white py-10">
+    <div className="min-h-screen text-zen-800 py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6">
-          <h1 className="text-3xl font-semibold mb-2">Cart Object Array Builder</h1>
-          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+        <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
+          <h1 className="text-2xl font-light tracking-wide text-zen-700 mb-2">Cart Object Array Builder</h1>
+          <div className="space-y-2 text-sm text-zen-500">
             <a
               href="https://amplitude.com/docs/analytics/charts/cart-analysis"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-matcha-400 hover:text-matcha-300 hover:underline"
             >
               Documentation: Amplitude cart analysis
             </a>
@@ -630,22 +630,22 @@ export default function CartAnalysisPage() {
           />
         </div>
 
-        <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6 space-y-4">
+        <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6 space-y-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-zen-500">
                 Answerable Use Cases
               </h3>
               {sharedKeys.length > 0 ? (
-                <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
+                <ul className="space-y-1 text-sm text-zen-700">
                   {sharedKeys.map((key) => (
                     <li key={`shared-${key}`}>
                       {' '}
-                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-700">
+                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-zen-100">
                         {primaryKey}.{key}
                       </span>{' '}
                       can be joined with{' '}
-                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-700">
+                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-zen-100">
                         {secondaryKey}.{key}
                       </span>{' '}
                       in charts
@@ -653,25 +653,25 @@ export default function CartAnalysisPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-zen-500">
                   Add matching keys in both arrays to see joinable examples.
                 </p>
               )}
             </div>
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-zen-500">
                 Review
               </h3>
               {uniquePrimaryKeys.length === 0 && uniqueSecondaryKeys.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-zen-500">
                   No unmatched keys to review.
                 </p>
               ) : (
-                <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
+                <ul className="space-y-1 text-sm text-zen-700">
                   {uniquePrimaryKeys.map((key) => (
                     <li key={`review-primary-${key}`}>
                       {' '}
-                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-700">
+                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-zen-100">
                         {primaryKey}.{key}
                       </span>{' '}
                       does not match any other property
@@ -680,7 +680,7 @@ export default function CartAnalysisPage() {
                   {uniqueSecondaryKeys.map((key) => (
                     <li key={`review-secondary-${key}`}>
                       {' '}
-                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-700">
+                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-zen-100">
                         {secondaryKey}.{key}
                       </span>{' '}
                       does not match any other property
@@ -691,11 +691,11 @@ export default function CartAnalysisPage() {
             </div>
           </div>
           <h2 className="text-xl font-semibold">Use Case Examples</h2>
-          <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
+          <ul className="space-y-2 text-sm text-zen-700">
             <li>
               “For a given ProductID/SKU, what’s the conversion from Product Viewed → Added to Cart
               → Order Completed?”
-              <ul className="mt-1 ml-5 list-disc text-gray-600 dark:text-gray-300">
+              <ul className="mt-1 ml-5 list-disc text-zen-600">
                 <li>
                   The dual object arrays support this question so that you can always filter on the
                   same property value.
@@ -705,13 +705,13 @@ export default function CartAnalysisPage() {
             <li>
               “Where items are added (PLP/PDP/carousel/cart) and in what order?” “Which items were
               added first and ended up building the basket around them?”
-              <ul className="mt-1 ml-5 list-disc text-gray-600 dark:text-gray-300">
+              <ul className="mt-1 ml-5 list-disc text-zen-600">
                 <li>Track an order-in-cart property in the Cart_Contents array.</li>
               </ul>
             </li>
             <li>
               “What else is in the cart at the time of each key action?”
-              <ul className="mt-1 ml-5 list-disc text-gray-600 dark:text-gray-300">
+              <ul className="mt-1 ml-5 list-disc text-zen-600">
                 <li>
                   The cart object array helps you track the state of the cart as the user navigates
                   the website.
@@ -721,7 +721,7 @@ export default function CartAnalysisPage() {
             <li>
               “Which recommendation pods/carousels and suggested products actually drive
               conversion?”
-              <ul className="mt-1 ml-5 list-disc text-gray-600 dark:text-gray-300">
+              <ul className="mt-1 ml-5 list-disc text-zen-600">
                 <li>
                   Track the type of item in the Product_Engagement array, such as
                   recommendation/gift/bundle.

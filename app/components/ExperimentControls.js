@@ -53,10 +53,10 @@ export default function ExperimentControls() {
 
   return (
     <div className="w-full max-w-3xl bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6 mb-6">
-      <h2 className="text-lg font-medium text-zen-800 mb-3">A/B Test & Feature Flag Playground</h2>
+      <h2 className="text-lg font-semibold text-zen-800 mb-3">A/B Test & Feature Flag Playground</h2>
       
       <div className="mb-8 p-4 bg-zen-100 rounded-lg border border-zen-200">
-        <h3 className="text-base font-medium text-zen-700 mb-4">Experiment Controls</h3>
+        <h3 className="text-base font-semibold text-zen-700 mb-4">Experiment Controls</h3>
         
         <div className="mb-4">
           <div className="flex items-center space-x-2 mb-2">
@@ -104,7 +104,7 @@ export default function ExperimentControls() {
       </div>
 
       <div className="p-4 bg-zen-100 rounded-lg border border-zen-200">
-        <h3 className="text-base font-medium text-zen-700 mb-4">User Properties for Targeting</h3>
+        <h3 className="text-base font-semibold text-zen-700 mb-4">User Properties for Targeting</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>

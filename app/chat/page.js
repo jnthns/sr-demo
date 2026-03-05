@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { logEvent } from "../../lib/amplitude"
 import { initializeChat, clearChatHistory, handleGeminiError } from "../../lib/geminichat"
 import { chatService } from "../../lib/chatService"
+import PageHeading from '../components/PageHeading';
 
 const MarkdownRenderer = dynamic(() => import("../components/MarkdownRenderer"), {
   ssr: false,
@@ -252,7 +253,7 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
         <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
           <div className="flex justify-between items-center mb-3">
             <div className="flex items-center space-x-3">
-              <h2 className="text-2xl font-light tracking-wide text-zen-700">AI Chatbot</h2>
+              <PageHeading>AI Chatbot</PageHeading>
               <div className={`flex items-center space-x-1 text-xs px-2 py-1 rounded-full ${
                 isInitialized && !error
                   ? 'bg-matcha-100 text-matcha-300' 

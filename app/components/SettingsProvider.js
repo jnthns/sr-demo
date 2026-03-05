@@ -13,6 +13,26 @@ const PRESETS = [
   { id: 'arctic',          name: 'Arctic',           color1: '#67e8f9', color2: '#818cf8' },
 ];
 
+const PAGES = [
+  { path: '/', label: 'Experiments' },
+  { path: '/cart-analysis', label: 'Cart Arrays' },
+  { path: '/chat', label: 'Chat' },
+  { path: '/store', label: 'Store' },
+  { path: '/filesearch', label: 'File Search' },
+  { path: '/amplitude', label: 'Amplitude APIs' },
+  { path: '/notes', label: 'Account Notes' },
+];
+
+const DEFAULT_HEADING_COLORS = {
+  '/': '#22d3ee',
+  '/cart-analysis': '#a78bfa',
+  '/chat': '#67e8f9',
+  '/store': '#f472b6',
+  '/filesearch': '#34d399',
+  '/amplitude': '#c084fc',
+  '/notes': '#fbbf24',
+};
+
 const DEFAULTS = {
   preset: 'northern-lights',
   auroraColor1: '#8b5cf6',
@@ -20,6 +40,8 @@ const DEFAULTS = {
   auroraIntensity: 0.22,
   glassBlur: 24,
   reduceMotion: false,
+  theme: 'dark',
+  headingColors: DEFAULT_HEADING_COLORS,
 };
 
 const STORAGE_KEY = 'app-settings';
@@ -77,6 +99,7 @@ export default function SettingsProvider({ children }) {
     root.style.setProperty('--aurora-intensity', String(settings.auroraIntensity));
     root.style.setProperty('--glass-blur', String(settings.glassBlur));
     root.style.setProperty('--reduce-motion', settings.reduceMotion ? '1' : '0');
+    root.setAttribute('data-theme', settings.theme);
   }, [settings, hydrated]);
 
   const updateSettings = useCallback((patch) => {
@@ -155,6 +178,39 @@ function SettingsModal() {
             </svg>
           </button>
         </div>
+
+        {/* Light / Dark Toggle */}
+        <section className="mb-6">
+          <label className="block text-sm font-medium text-zen-600 mb-3">Appearance</label>
+          <div className="flex rounded-xl border border-zen-200 overflow-hidden">
+            <button
+              onClick={() => updateSettings({ theme: 'light' })}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition ${
+                settings.theme === 'light'
+                  ? 'bg-zen-200 text-zen-800'
+                  : 'text-zen-500 hover:text-zen-700 hover:bg-zen-100'
+              }`}
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                <path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zm-8-5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 012 10zm13 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 0115 10zM4.343 4.343a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.06-1.06a.75.75 0 010-1.061zM4.343 15.657a.75.75 0 010-1.06l1.06-1.061a.75.75 0 111.061 1.06l-1.06 1.061a.75.75 0 01-1.061 0zm9.193-9.193a.75.75 0 010-1.06l1.06-1.061a.75.75 0 111.061 1.06l-1.06 1.06a.75.75 0 01-1.061 0zM10 7a3 3 0 100 6 3 3 0 000-6z" />
+              </svg>
+              Light
+            </button>
+            <button
+              onClick={() => updateSettings({ theme: 'dark' })}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition ${
+                settings.theme === 'dark'
+                  ? 'bg-zen-200 text-zen-800'
+                  : 'text-zen-500 hover:text-zen-700 hover:bg-zen-100'
+              }`}
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                <path fillRule="evenodd" d="M7.455 2.004a.75.75 0 01.26.77 7 7 0 009.958 7.967.75.75 0 011.067.853A8.5 8.5 0 116.647 1.921a.75.75 0 01.808.083z" clipRule="evenodd" />
+              </svg>
+              Dark
+            </button>
+          </div>
+        </section>
 
         {/* Aurora Theme Presets */}
         <section className="mb-6">
@@ -296,6 +352,38 @@ function SettingsModal() {
               />
             </button>
           </div>
+        </section>
+
+        {/* Page Heading Colors */}
+        <section className="mb-8">
+          <label className="block text-sm font-medium text-zen-600 mb-3">Page Heading Colors</label>
+          <div className="space-y-2">
+            {PAGES.map((page) => {
+              const color = settings.headingColors?.[page.path] || DEFAULT_HEADING_COLORS[page.path];
+              return (
+                <div key={page.path} className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={color}
+                    onChange={(e) =>
+                      updateSettings({
+                        headingColors: { ...settings.headingColors, [page.path]: e.target.value },
+                      })
+                    }
+                    className="w-7 h-7 rounded-md border border-zen-300 bg-transparent cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0.5 [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch]:border-0"
+                  />
+                  <span className="text-sm text-zen-700 flex-1">{page.label}</span>
+                  <span className="text-[10px] text-zen-400 font-mono">{color}</span>
+                </div>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => updateSettings({ headingColors: DEFAULT_HEADING_COLORS })}
+            className="mt-3 text-xs text-zen-500 hover:text-zen-700 transition"
+          >
+            Reset to defaults
+          </button>
         </section>
 
         {/* Danger Zone */}

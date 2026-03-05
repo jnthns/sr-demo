@@ -37,8 +37,14 @@ export default function RootLayout({ children }) {
   `;
 
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark">
       <head>
+        {/* Apply saved theme before paint to prevent flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var s=JSON.parse(localStorage.getItem('app-settings'));if(s){if(s.theme)document.documentElement.setAttribute('data-theme',s.theme);var r=document.documentElement.style;if(s.auroraColor1){var h=function(c){var v=parseInt(c.slice(1,3),16)+', '+parseInt(c.slice(3,5),16)+', '+parseInt(c.slice(5,7),16);return v};r.setProperty('--aurora-1',h(s.auroraColor1));r.setProperty('--aurora-2',h(s.auroraColor2))}if(s.auroraIntensity!=null)r.setProperty('--aurora-intensity',String(s.auroraIntensity));if(s.glassBlur!=null)r.setProperty('--glass-blur',String(s.glassBlur))}}catch(e){}`,
+          }}
+        />
         {/* Amplitude Web Experiment Anti-Flicker Snippet */}
         <script
           dangerouslySetInnerHTML={{

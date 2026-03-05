@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react';
+import PageHeading from '../components/PageHeading';
 
 const createDefaultItem = () => ([
   { key: 'product_id', value: '1' },
@@ -357,7 +358,7 @@ function CartArrayBuilder({
 
       <div>
         <h3 className="text-lg font-semibold mb-3">JSON Preview</h3>
-        <pre className="whitespace-pre-wrap break-words rounded-lg bg-[#0d0b1e] text-zen-600 p-4 text-sm overflow-x-auto">
+        <pre className="whitespace-pre-wrap break-words rounded-lg bg-gray-900 text-gray-300 p-4 text-sm overflow-x-auto">
           {renderJsonPreview()}
         </pre>
       </div>
@@ -591,7 +592,7 @@ export default function CartAnalysisPage() {
     <div className="min-h-screen text-zen-800 py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
-          <h1 className="text-2xl font-light tracking-wide text-zen-700 mb-2">Cart Object Array Builder</h1>
+          <PageHeading className="mb-2">Cart Object Array Builder</PageHeading>
           <div className="space-y-2 text-sm text-zen-500">
             <a
               href="https://amplitude.com/docs/analytics/charts/cart-analysis"

@@ -3,9 +3,13 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useSettings } from './SettingsProvider';
 
 export default function MarkdownRenderer({ content, className, enableCopy = true }) {
+  const { settings } = useSettings();
+  const isLight = settings.theme === 'light';
+  const codeTheme = isLight ? oneLight : oneDark;
   return (
     <div className={className}>
       <ReactMarkdown
@@ -32,14 +36,14 @@ export default function MarkdownRenderer({ content, className, enableCopy = true
                   )}
                 </div>
                 <SyntaxHighlighter
-                  style={oneDark}
+                  style={codeTheme}
                   language={match[1]}
                   PreTag="div"
                   className="!m-0 !p-3"
                   customStyle={{
                     margin: 0,
                     padding: '0.75rem',
-                    background: 'rgba(0, 0, 0, 0.3)',
+                    background: isLight ? '#f8f9fc' : 'rgba(0, 0, 0, 0.3)',
                     fontSize: '0.875rem',
                     lineHeight: '1.5'
                   }}

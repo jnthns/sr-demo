@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { logEvent } from "../../lib/amplitude"
+import PageHeading from '../components/PageHeading';
 
 export default function StorePage() {
   // Mock product data
@@ -289,7 +290,7 @@ export default function StorePage() {
     <div className="min-h-screen py-10">
       <div className="max-w-6xl mx-auto px-6 space-y-6">
         <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
-          <h2 className="text-2xl font-light tracking-wide text-zen-700 mb-6">E-commerce Store</h2>
+          <PageHeading className="mb-6">E-commerce Store</PageHeading>
           
           {/* Search Bar */}
           <div className="mb-6">
@@ -318,7 +319,7 @@ export default function StorePage() {
           {/* Cart Sidebar */}
           {showCart && (
             <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setShowCart(false)}>
-              <div className="fixed right-0 top-0 h-full w-80 bg-[#0d0b1e]/95 glass shadow-xl p-6 overflow-y-auto">
+              <div className="fixed right-0 top-0 h-full w-80 bg-zen-100 glass shadow-xl p-6 overflow-y-auto border-l border-zen-200">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Shopping Cart</h3>
                   <button

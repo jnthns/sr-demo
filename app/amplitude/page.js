@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import * as amplitude from '@amplitude/analytics-browser';
 import { deviceId as defaultDeviceId } from '../../lib/amplitude';
+import PageHeading from '../components/PageHeading';
 
 const DEFAULT_API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY;
 
@@ -245,7 +246,7 @@ export default function AmplitudeApiTesterPage() {
         <label className="block text-xs font-medium text-zen-500 mb-1">
           Request Body
         </label>
-        <pre className="rounded-lg border border-zen-200 bg-[#0d0b1e] p-3 text-xs text-zen-600 overflow-x-auto max-h-48 overflow-y-auto font-mono">
+        <pre className="rounded-lg border border-zen-200 bg-gray-900 p-3 text-xs text-gray-300 overflow-x-auto max-h-48 overflow-y-auto font-mono">
           {JSON.stringify(payload, null, 2)}
         </pre>
       </div>
@@ -268,7 +269,7 @@ export default function AmplitudeApiTesterPage() {
     <div className="min-h-screen text-zen-800 py-10">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
-          <h1 className="text-2xl font-light tracking-wide text-zen-700 mb-2">Amplitude API Tester</h1>
+          <PageHeading className="mb-2">Amplitude API Tester</PageHeading>
           <p className="text-zen-500">
             Send Identify, Group Identify, HTTP, and Batch requests. The time field is always set
             to the current datetime when the request is sent.
@@ -276,7 +277,7 @@ export default function AmplitudeApiTesterPage() {
         </div>
 
         <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
-          <h2 className="text-lg font-medium text-zen-700 mb-4">Shared Context</h2>
+          <h2 className="text-lg font-semibold text-zen-700 mb-4">Shared Context</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="user-id" className="block text-sm font-medium text-zen-600 mb-1">
@@ -351,7 +352,7 @@ export default function AmplitudeApiTesterPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
-            <h2 className="text-lg font-medium text-zen-700 mb-4">Identify</h2>
+            <h2 className="text-lg font-semibold text-zen-700 mb-4">Identify</h2>
             <label htmlFor="identify-props" className="block text-sm font-medium text-zen-600 mb-1">
               User Properties (JSON)
             </label>
@@ -373,7 +374,7 @@ export default function AmplitudeApiTesterPage() {
           </div>
 
           <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
-            <h2 className="text-lg font-medium text-zen-700 mb-4">Group Identify</h2>
+            <h2 className="text-lg font-semibold text-zen-700 mb-4">Group Identify</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label htmlFor="group-type" className="block text-sm font-medium text-zen-600 mb-1">
@@ -421,7 +422,7 @@ export default function AmplitudeApiTesterPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
-            <h2 className="text-lg font-medium text-zen-700 mb-4">HTTP API</h2>
+            <h2 className="text-lg font-semibold text-zen-700 mb-4">HTTP API</h2>
             <label htmlFor="http-event-type" className="block text-sm font-medium text-zen-600 mb-1">
               Event Type
             </label>
@@ -452,7 +453,7 @@ export default function AmplitudeApiTesterPage() {
           </div>
 
           <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6">
-            <h2 className="text-lg font-medium text-zen-700 mb-4">Batch API</h2>
+            <h2 className="text-lg font-semibold text-zen-700 mb-4">Batch API</h2>
             <label htmlFor="batch-event-type" className="block text-sm font-medium text-zen-600 mb-1">
               Event Type
             </label>

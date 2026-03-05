@@ -17,6 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import PageHeading from '../components/PageHeading';
 
 const generateId = () =>
   typeof crypto !== 'undefined' && crypto.randomUUID
@@ -338,7 +339,7 @@ export default function NotesPage() {
   return (
     <div className="h-screen flex flex-col overflow-hidden text-zen-800">
       <div className="flex items-center justify-between px-6 py-4 flex-shrink-0 border-b border-zen-200">
-        <h1 className="text-2xl font-light tracking-wide text-zen-700">Account Notes</h1>
+        <PageHeading>Account Notes</PageHeading>
         <button
           onClick={addAccount}
           className="bg-gradient-to-r from-matcha-500 to-glow-500 hover:bg-matcha-600 text-white text-sm font-medium px-4 py-2 rounded-full transition shadow-sm"

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { logEvent } from "../../lib/amplitude"
+import PageHeading from '../components/PageHeading';
 
 const MarkdownRenderer = dynamic(() => import("../components/MarkdownRenderer"), {
   ssr: false,
@@ -512,7 +513,7 @@ I'll provide answers with citations from your uploaded files.`,
   return (
     <div className="min-h-screen py-6">
       <div className="max-w-7xl mx-auto w-full px-6">
-        <h1 className="text-2xl font-light tracking-wide text-zen-700 mb-6">File Search (RAG) Assistant</h1>
+        <PageHeading className="mb-6">File Search (RAG) Assistant</PageHeading>
 
         {error && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">

@@ -1,7 +1,7 @@
 export default function ExperimentStaticForm() {
   return (
     <div className="w-full max-w-3xl bg-zen-100 glass-card rounded-2xl border border-zen-200 p-6 mb-6">
-      <h3 className="text-lg font-medium text-zen-800 mb-3">Example Form</h3>
+      <h3 className="text-lg font-semibold text-zen-800 mb-3">Example Form</h3>
       <p className="text-zen-500 mb-4">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Duis sollicitudin,
         nunc sit amet hendrerit volutpat, nisi nunc varius lacus, a pharetra felis lacus et eros.

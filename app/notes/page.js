@@ -1,28 +1,33 @@
 'use client'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { logEvent } from '../../lib/amplitude';
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  useSortable,
-  arrayMove,
-  rectSortingStrategy,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import PageHeading from '../components/PageHeading';
 
 const generateId = () =>
   typeof crypto !== 'undefined' && crypto.randomUUID
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+const STATUSES = [
+  { value: 'todo', label: 'To Do', dotClass: 'bg-zen-400' },
+  { value: 'in_progress', label: 'In Progress', dotClass: 'bg-blue-400' },
+  { value: 'blocked', label: 'Customer', dotClass: 'bg-emerald-400' },
+  { value: 'done', label: 'Blocked', dotClass: 'bg-red-400' },
+];
+
+const ROW_COLORS = [
+  { value: null, label: 'None', className: '' },
+  { value: 'red', label: 'Red', bg: 'bg-red-500/10', border: 'border-l-red-400', dot: 'bg-red-400' },
+  { value: 'orange', label: 'Orange', bg: 'bg-orange-500/10', border: 'border-l-orange-400', dot: 'bg-orange-400' },
+  { value: 'yellow', label: 'Yellow', bg: 'bg-yellow-500/10', border: 'border-l-yellow-400', dot: 'bg-yellow-400' },
+  { value: 'green', label: 'Green', bg: 'bg-emerald-500/10', border: 'border-l-emerald-400', dot: 'bg-emerald-400' },
+  { value: 'blue', label: 'Blue', bg: 'bg-blue-500/10', border: 'border-l-blue-400', dot: 'bg-blue-400' },
+  { value: 'purple', label: 'Purple', bg: 'bg-purple-500/10', border: 'border-l-purple-400', dot: 'bg-purple-400' },
+];
+
+const getColorConfig = (color) => ROW_COLORS.find((c) => c.value === color) || ROW_COLORS[0];
+const getStatusConfig = (status) => STATUSES.find((s) => s.value === status) || STATUSES[0];
 
 const createAccount = (name = 'New Account') => ({
   id: generateId(),
@@ -34,85 +39,192 @@ const createAccount = (name = 'New Account') => ({
 const createTask = (title = '') => ({
   id: generateId(),
   title,
-  priority: false,
-  completed: false,
+  status: 'todo',
+  color: null,
   assignee: '',
-  collapsed: true,
   subtasks: [],
 });
 
 const createSubtask = (title = '') => ({
   id: generateId(),
   title,
-  completed: false,
+  status: 'todo',
+  color: null,
 });
 
-const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
-const URL_TEST = /https?:\/\/[^\s]+/;
-const hasUrl = (text) => URL_TEST.test(text);
+const STORAGE_KEY = 'account-notes';
 
-const focusElementById = (id) => {
+function migrateAccounts(data) {
+  return data.map((account) => ({
+    ...account,
+    tasks: (account.tasks || []).map((task) => ({
+      status: task.completed ? 'done' : 'todo',
+      color: null,
+      assignee: '',
+      ...task,
+      completed: undefined,
+      priority: undefined,
+      collapsed: undefined,
+      subtasks: (task.subtasks || []).map((sub) => ({
+        status: sub.completed ? 'done' : 'todo',
+        color: null,
+        ...sub,
+        completed: undefined,
+      })),
+    })),
+  }));
+}
+
+const focusInput = (id) => {
   requestAnimationFrame(() => {
     const el = document.querySelector(`[data-focus-id="${id}"]`);
     if (el) el.focus();
   });
 };
 
-function GripIcon({ small }) {
-  const s = small ? 'w-2 h-3' : 'w-2.5 h-3.5';
-  return (
-    <svg viewBox="0 0 10 16" fill="currentColor" className={s}>
-      <circle cx="3" cy="2" r="1.5" />
-      <circle cx="7" cy="2" r="1.5" />
-      <circle cx="3" cy="8" r="1.5" />
-      <circle cx="7" cy="8" r="1.5" />
-      <circle cx="3" cy="14" r="1.5" />
-      <circle cx="7" cy="14" r="1.5" />
-    </svg>
-  );
-}
+// --- Dropdown for status / color pickers ---
 
-function AutoResizeTextarea({ value, onChange, onBlur, onKeyDown, placeholder, className, autoFocus, focusId }) {
-  const ref = (el) => {
-    if (!el) return;
-    el.style.height = '0';
-    el.style.height = `${el.scrollHeight}px`;
-    if (autoFocus) el.focus();
+function Popover({ trigger, children, align = 'left' }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const triggerRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (
+        triggerRef.current?.contains(e.target) ||
+        dropdownRef.current?.contains(e.target)
+      ) return;
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const toggle = () => {
+    if (!open && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setPos({
+        top: rect.bottom + 4,
+        left: align === 'right' ? rect.right : rect.left,
+      });
+    }
+    setOpen(!open);
   };
 
   return (
-    <textarea
-      ref={ref}
-      data-focus-id={focusId}
-      value={value}
-      onChange={(e) => {
-        onChange(e);
-        e.target.style.height = '0';
-        e.target.style.height = `${e.target.scrollHeight}px`;
-      }}
-      onBlur={onBlur}
-      onKeyDown={onKeyDown}
-      placeholder={placeholder}
-      rows={1}
-      className={`resize-none overflow-hidden ${className}`}
-    />
+    <>
+      <div ref={triggerRef} onClick={toggle}>{trigger}</div>
+      {open && (
+        <div
+          ref={dropdownRef}
+          className="fixed z-[100] py-1 rounded-lg border border-zen-200 bg-zen-100 glass-card shadow-xl min-w-[140px]"
+          style={{
+            top: pos.top,
+            left: align === 'right' ? undefined : pos.left,
+            right: align === 'right' ? window.innerWidth - pos.left : undefined,
+          }}
+        >
+          {typeof children === 'function' ? children(() => setOpen(false)) : children}
+        </div>
+      )}
+    </>
   );
 }
 
-function EditableWithLinks({ value, onChange, onKeyDown, placeholder, className, inputClassName, focusId }) {
+function StatusBadge({ status, onChange }) {
+  const cfg = getStatusConfig(status);
+  return (
+    <Popover
+      trigger={
+        <button className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border border-zen-200 hover:border-zen-300 transition bg-zen-50">
+          <span className={`w-2 h-2 rounded-full ${cfg.dotClass}`} />
+          <span className="text-zen-600">{cfg.label}</span>
+        </button>
+      }
+    >
+      {(close) => (
+        <div className="py-1">
+          {STATUSES.map((s) => (
+            <button
+              key={s.value}
+              onClick={() => { onChange(s.value); close(); }}
+              className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-zen-200 transition ${
+                s.value === status ? 'text-zen-800 font-medium' : 'text-zen-600'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${s.dotClass}`} />
+              {s.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </Popover>
+  );
+}
+
+function ColorPicker({ color, onChange }) {
+  const cfg = getColorConfig(color);
+  return (
+    <Popover
+      trigger={
+        <button
+          className="w-5 h-5 rounded-full border border-zen-200 hover:border-zen-300 transition flex items-center justify-center"
+          aria-label="Set color"
+        >
+          {cfg.value ? (
+            <span className={`w-3 h-3 rounded-full ${cfg.dot}`} />
+          ) : (
+            <span className="w-3 h-3 rounded-full border border-dashed border-zen-300" />
+          )}
+        </button>
+      }
+    >
+      {(close) => (
+        <div className="py-1">
+          {ROW_COLORS.map((c) => (
+            <button
+              key={c.value || 'none'}
+              onClick={() => { onChange(c.value); close(); }}
+              className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-zen-200 transition ${
+                c.value === color ? 'text-zen-800 font-medium' : 'text-zen-600'
+              }`}
+            >
+              {c.value ? (
+                <span className={`w-2.5 h-2.5 rounded-full ${c.dot}`} />
+              ) : (
+                <span className="w-2.5 h-2.5 rounded-full border border-dashed border-zen-300" />
+              )}
+              {c.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </Popover>
+  );
+}
+
+// --- Inline editable cell with auto-linked URLs ---
+
+const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
+const URL_TEST = /https?:\/\/[^\s]+/;
+
+function EditableCell({ value, onChange, onKeyDown, placeholder, className = '', focusId }) {
   const [editing, setEditing] = useState(false);
 
-  if (editing || !value || !hasUrl(value)) {
+  if (editing || !value || !URL_TEST.test(value)) {
     return (
-      <AutoResizeTextarea
+      <input
+        data-focus-id={focusId}
         value={value}
-        onChange={onChange}
-        onBlur={() => setEditing(false)}
+        onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
-        placeholder={placeholder}
-        className={inputClassName}
+        onBlur={() => setEditing(false)}
         autoFocus={editing}
-        focusId={focusId}
+        placeholder={placeholder}
+        className={`bg-transparent focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded px-1.5 py-1 w-full ${className}`}
       />
     );
   }
@@ -121,13 +233,13 @@ function EditableWithLinks({ value, onChange, onKeyDown, placeholder, className,
   return (
     <span
       onClick={() => setEditing(true)}
-      className={`cursor-text ${className || ''}`}
+      onKeyDown={(e) => { if (e.key === 'Enter') setEditing(true); }}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter') setEditing(true); }}
+      className={`cursor-text truncate px-1.5 py-1 w-full block ${className}`}
     >
       {parts.map((part, i) =>
-        hasUrl(part) ? (
+        URL_TEST.test(part) ? (
           <a
             key={i}
             href={part}
@@ -146,16 +258,11 @@ function EditableWithLinks({ value, onChange, onKeyDown, placeholder, className,
   );
 }
 
-const STORAGE_KEY = 'account-notes';
-const SEED_KEY = 'account-notes-seeded-v2';
+// --- Main Page ---
 
 export default function NotesPage() {
   const [accounts, setAccounts] = useState([]);
   const [isHydrated, setIsHydrated] = useState(false);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  );
 
   useEffect(() => {
     let loaded = [];
@@ -168,17 +275,7 @@ export default function NotesPage() {
         console.warn('Failed to load account notes:', err);
       }
     }
-
-    if (!localStorage.getItem(SEED_KEY)) {
-      const existingNames = new Set(loaded.map((a) => a.name));
-      const seeded = buildSeedAccounts().filter(
-        (a) => !existingNames.has(a.name)
-      );
-      loaded = [...loaded, ...seeded];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(loaded));
-      localStorage.setItem(SEED_KEY, 'true');
-    }
-
+    loaded = migrateAccounts(loaded);
     setAccounts(loaded);
     setIsHydrated(true);
   }, []);
@@ -218,7 +315,7 @@ export default function NotesPage() {
     const task = createTask();
     updateAccount(accountId, (a) => ({ ...a, tasks: [...a.tasks, task] }));
     logEvent('Task Created', { account_id: accountId, task_id: task.id });
-    focusElementById(task.id);
+    focusInput(task.id);
   };
 
   const removeTask = (accountId, taskId) => {
@@ -233,9 +330,8 @@ export default function NotesPage() {
     updateTask(accountId, taskId, (t) => ({
       ...t,
       subtasks: [...t.subtasks, sub],
-      collapsed: false,
     }));
-    focusElementById(sub.id);
+    focusInput(sub.id);
   };
 
   const removeSubtask = (accountId, taskId, subtaskId) => {
@@ -254,235 +350,75 @@ export default function NotesPage() {
     }));
   };
 
-  // --- DnD ---
-
-  const handleAccountDragEnd = (event) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    setAccounts((prev) => {
-      const oldIndex = prev.findIndex((a) => a.id === active.id);
-      const newIndex = prev.findIndex((a) => a.id === over.id);
-      return arrayMove(prev, oldIndex, newIndex);
-    });
-    logEvent('Account Reordered');
-  };
-
-  const reorderTasks = (accountId, oldIndex, newIndex) => {
-    updateAccount(accountId, (a) => ({
-      ...a,
-      tasks: arrayMove(a.tasks, oldIndex, newIndex),
-    }));
-    logEvent('Task Reordered', { account_id: accountId });
-  };
-
-  // --- Keyboard shortcut helpers ---
-
-  const addTaskAfter = (accountId, afterTaskId) => {
-    const task = createTask();
-    updateAccount(accountId, (a) => {
-      const idx = a.tasks.findIndex((t) => t.id === afterTaskId);
-      const tasks = [...a.tasks];
-      tasks.splice(idx + 1, 0, task);
-      return { ...a, tasks };
-    });
-    logEvent('Task Created', { account_id: accountId, task_id: task.id });
-    focusElementById(task.id);
-  };
-
-  const addSubtaskAfter = (accountId, taskId, afterSubtaskId) => {
-    const sub = createSubtask();
-    updateTask(accountId, taskId, (t) => {
-      const idx = t.subtasks.findIndex((s) => s.id === afterSubtaskId);
-      const subtasks = [...t.subtasks];
-      subtasks.splice(idx + 1, 0, sub);
-      return { ...t, subtasks, collapsed: false };
-    });
-    focusElementById(sub.id);
-  };
-
-  const indentTask = (accountId, taskId) => {
-    updateAccount(accountId, (a) => {
-      const idx = a.tasks.findIndex((t) => t.id === taskId);
-      if (idx <= 0) return a;
-      const task = a.tasks[idx];
-      const newSub = createSubtask(task.title);
-      const tasks = a.tasks.filter((_, i) => i !== idx);
-      tasks[idx - 1] = {
-        ...tasks[idx - 1],
-        subtasks: [...tasks[idx - 1].subtasks, newSub],
-        collapsed: false,
-      };
-      return { ...a, tasks };
-    });
-  };
-
-  const promoteSubtask = (accountId, taskId, subtaskId) => {
-    updateAccount(accountId, (a) => {
-      const taskIdx = a.tasks.findIndex((t) => t.id === taskId);
-      if (taskIdx < 0) return a;
-      const task = a.tasks[taskIdx];
-      const sub = task.subtasks.find((s) => s.id === subtaskId);
-      if (!sub) return a;
-      const newTask = createTask(sub.title);
-      const updatedTasks = [...a.tasks];
-      updatedTasks[taskIdx] = {
-        ...task,
-        subtasks: task.subtasks.filter((s) => s.id !== subtaskId),
-      };
-      updatedTasks.splice(taskIdx + 1, 0, newTask);
-      return { ...a, tasks: updatedTasks };
-    });
-  };
-
   if (!isHydrated) return null;
 
   return (
     <div className="h-screen flex flex-col overflow-hidden text-zen-800">
+      {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 flex-shrink-0 border-b border-zen-200">
         <PageHeading>Account Notes</PageHeading>
         <button
           onClick={addAccount}
-          className="bg-gradient-to-r from-matcha-500 to-glow-500 hover:bg-matcha-600 text-white text-sm font-medium px-4 py-2 rounded-full transition shadow-sm"
+          className="bg-gradient-to-r from-matcha-500 to-glow-500 hover:opacity-90 text-white text-sm font-medium px-4 py-2 rounded-full transition shadow-sm"
         >
           + Add Account
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
+      {/* Table */}
+      <div className="flex-1 overflow-y-auto">
         {accounts.length === 0 ? (
           <div className="flex items-center justify-center h-full text-zen-400">
             <p className="font-light">No accounts yet. Click &ldquo;Add Account&rdquo; to get started.</p>
           </div>
         ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleAccountDragEnd}>
-            <SortableContext items={accounts.map((a) => a.id)} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
-                {accounts.map((account) => (
-                  <SortableAccountCard
-                    key={account.id}
-                    account={account}
-                    onUpdate={(updater) => updateAccount(account.id, updater)}
-                    onRemove={() => removeAccount(account.id)}
-                    onAddTask={() => addTask(account.id)}
-                    onRemoveTask={(taskId) => removeTask(account.id, taskId)}
-                    onUpdateTask={(taskId, updater) =>
-                      updateTask(account.id, taskId, updater)
-                    }
-                    onAddSubtask={(taskId) => addSubtask(account.id, taskId)}
-                    onRemoveSubtask={(taskId, subtaskId) =>
-                      removeSubtask(account.id, taskId, subtaskId)
-                    }
-                    onUpdateSubtask={(taskId, subtaskId, patch) =>
-                      updateSubtask(account.id, taskId, subtaskId, patch)
-                    }
-                    onReorderTasks={(oldIdx, newIdx) =>
-                      reorderTasks(account.id, oldIdx, newIdx)
-                    }
-                    onAddTaskAfter={(afterTaskId) =>
-                      addTaskAfter(account.id, afterTaskId)
-                    }
-                    onAddSubtaskAfter={(taskId, afterSubId) =>
-                      addSubtaskAfter(account.id, taskId, afterSubId)
-                    }
-                    onIndentTask={(taskId) => indentTask(account.id, taskId)}
-                    onPromoteSubtask={(taskId, subtaskId) =>
-                      promoteSubtask(account.id, taskId, subtaskId)
-                    }
-                  />
-                ))}
+          <div className="max-w-6xl mx-auto border border-zen-200 rounded-2xl overflow-hidden my-4">
+            {/* Column headers */}
+            <div className="sticky top-0 z-20 bg-zen-100 glass border-b border-zen-200">
+              <div className="grid grid-cols-[1fr_120px_44px_120px_36px] gap-2 px-6 py-2 text-xs font-semibold text-zen-500 uppercase tracking-wider">
+                <span>Title</span>
+                <span>Status</span>
+                <span className="text-center">Color</span>
+                <span>Assignee</span>
+                <span />
               </div>
-            </SortableContext>
-          </DndContext>
+            </div>
+
+            {accounts.map((account) => (
+              <AccountSection
+                key={account.id}
+                account={account}
+                onUpdateAccount={(updater) => updateAccount(account.id, updater)}
+                onRemoveAccount={() => removeAccount(account.id)}
+                onAddTask={() => addTask(account.id)}
+                onRemoveTask={(taskId) => removeTask(account.id, taskId)}
+                onUpdateTask={(taskId, updater) => updateTask(account.id, taskId, updater)}
+                onAddSubtask={(taskId) => addSubtask(account.id, taskId)}
+                onRemoveSubtask={(taskId, subId) => removeSubtask(account.id, taskId, subId)}
+                onUpdateSubtask={(taskId, subId, patch) => updateSubtask(account.id, taskId, subId, patch)}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-// --- Sortable wrappers ---
+// --- Account group header + its task/subtask rows ---
 
-function SortableAccountCard({ account, ...props }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: account.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 10 : 'auto',
-  };
-
-  return (
-    <div ref={setNodeRef} style={style}>
-      <AccountCard
-        account={account}
-        dragListeners={listeners}
-        dragAttributes={attributes}
-        {...props}
-      />
-    </div>
-  );
-}
-
-function SortableTaskRow({ task, ...props }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style}>
-      <TaskRow
-        task={task}
-        dragListeners={listeners}
-        dragAttributes={attributes}
-        {...props}
-      />
-    </div>
-  );
-}
-
-// --- AccountCard ---
-
-function AccountCard({
+function AccountSection({
   account,
-  onUpdate,
-  onRemove,
+  onUpdateAccount,
+  onRemoveAccount,
   onAddTask,
   onRemoveTask,
   onUpdateTask,
   onAddSubtask,
   onRemoveSubtask,
   onUpdateSubtask,
-  onReorderTasks,
-  onAddTaskAfter,
-  onAddSubtaskAfter,
-  onIndentTask,
-  onPromoteSubtask,
-  dragListeners,
-  dragAttributes,
 }) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  );
 
   useEffect(() => {
     if (!confirmingDelete) return;
@@ -491,29 +427,15 @@ function AccountCard({
   }, [confirmingDelete]);
 
   const toggleCollapsed = () =>
-    onUpdate((a) => ({ ...a, collapsed: !a.collapsed }));
+    onUpdateAccount((a) => ({ ...a, collapsed: !a.collapsed }));
 
-  const handleTaskDragEnd = (event) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const oldIndex = account.tasks.findIndex((t) => t.id === active.id);
-    const newIndex = account.tasks.findIndex((t) => t.id === over.id);
-    onReorderTasks(oldIndex, newIndex);
-  };
+  const taskCount = account.tasks.length;
+  const doneCount = account.tasks.filter((t) => t.status === 'done').length;
 
   return (
-    <div className="bg-zen-100 glass-card rounded-2xl border border-zen-200 overflow-hidden animate-fade-slide-in">
-      {/* Card header */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-zen-100 border-b border-zen-200">
-        <button
-          {...dragListeners}
-          {...dragAttributes}
-          className="text-zen-300 hover:text-zen-500 transition flex-shrink-0 cursor-grab active:cursor-grabbing"
-          aria-label="Drag to reorder"
-        >
-          <GripIcon />
-        </button>
-
+    <div className="border-b border-zen-200">
+      {/* Account header row */}
+      <div className="flex items-center gap-2 px-6 py-3 bg-zen-50 hover:bg-zen-100 transition group">
         <button
           onClick={toggleCollapsed}
           className="text-zen-400 hover:text-zen-600 transition flex-shrink-0"
@@ -534,386 +456,294 @@ function AccountCard({
 
         <input
           value={account.name}
-          onChange={(e) =>
-            onUpdate((a) => ({ ...a, name: e.target.value }))
-          }
-          className="flex-1 min-w-0 bg-transparent font-medium text-base text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded px-2 py-1 -mx-1"
+          onChange={(e) => onUpdateAccount((a) => ({ ...a, name: e.target.value }))}
+          className="flex-1 min-w-0 bg-transparent font-semibold text-sm text-zen-800 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded px-2 py-1"
           placeholder="Account name"
         />
 
-        <span className="text-xs text-zen-500 flex-shrink-0">
-          {account.tasks.length} task{account.tasks.length !== 1 ? 's' : ''}
+        <span className="text-xs text-zen-400 flex-shrink-0 tabular-nums">
+          {doneCount}/{taskCount}
         </span>
+
+        <button
+          onClick={onAddTask}
+          className="text-xs text-matcha-400 hover:text-matcha-300 font-medium opacity-0 group-hover:opacity-100 transition flex-shrink-0"
+        >
+          + Task
+        </button>
 
         {confirmingDelete ? (
           <div className="flex items-center gap-1 flex-shrink-0">
-            <span className="text-xs text-red-500 font-medium">Delete?</span>
-            <button
-              onClick={onRemove}
-              className="text-red-500 hover:text-red-600 transition"
-              aria-label="Confirm delete"
-            >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
+            <span className="text-xs text-red-400">Delete?</span>
+            <button onClick={onRemoveAccount} className="text-red-400 hover:text-red-500 transition">
+              <CheckIcon />
             </button>
-            <button
-              onClick={() => setConfirmingDelete(false)}
-              className="text-zen-400 hover:text-zen-600 transition"
-              aria-label="Cancel delete"
-            >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path
-                  fillRule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
+            <button onClick={() => setConfirmingDelete(false)} className="text-zen-400 hover:text-zen-600 transition">
+              <XIcon />
             </button>
           </div>
         ) : (
           <button
             onClick={() => setConfirmingDelete(true)}
-            className="text-zen-400 hover:text-red-400 transition flex-shrink-0"
+            className="text-zen-300 hover:text-red-400 transition opacity-0 group-hover:opacity-100 flex-shrink-0"
             aria-label="Delete account"
           >
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <XIcon />
           </button>
         )}
       </div>
 
-      {/* Card body with collapse animation */}
+      {/* Task rows with collapse animation */}
       <div
         className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
           account.collapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'
         }`}
       >
         <div className="overflow-hidden">
-          <div className="px-4 py-3 space-y-2 max-h-96 overflow-y-auto bg-zen-50">
-            {account.tasks.length === 0 && (
-              <p className="text-xs text-zen-400 py-2 font-light">
-                No tasks yet.
-              </p>
-            )}
-
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleTaskDragEnd}
-            >
-              <SortableContext
-                items={account.tasks.map((t) => t.id)}
-                strategy={verticalListSortingStrategy}
+          {account.tasks.length === 0 && !account.collapsed && (
+            <div className="px-6 py-3">
+              <button
+                onClick={onAddTask}
+                className="text-xs text-zen-400 hover:text-matcha-400 transition"
               >
-                {account.tasks.map((task) => (
-                  <SortableTaskRow
-                    key={task.id}
-                    task={task}
-                    onUpdate={(updater) => onUpdateTask(task.id, updater)}
-                    onRemove={() => onRemoveTask(task.id)}
-                    onAddSubtask={() => onAddSubtask(task.id)}
-                    onRemoveSubtask={(subId) =>
-                      onRemoveSubtask(task.id, subId)
-                    }
-                    onUpdateSubtask={(subId, patch) =>
-                      onUpdateSubtask(task.id, subId, patch)
-                    }
-                    onAddTaskAfter={() => onAddTaskAfter(task.id)}
-                    onAddSubtaskAfter={(afterSubId) =>
-                      onAddSubtaskAfter(task.id, afterSubId)
-                    }
-                    onIndentTask={() => onIndentTask(task.id)}
-                    onPromoteSubtask={(subId) =>
-                      onPromoteSubtask(task.id, subId)
-                    }
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
+                + Add a task to get started
+              </button>
+            </div>
+          )}
+          {account.tasks.map((task) => (
+            <TaskRowGroup
+              key={task.id}
+              task={task}
+              onUpdateTask={(updater) => onUpdateTask(task.id, updater)}
+              onRemoveTask={() => onRemoveTask(task.id)}
+              onAddSubtask={() => onAddSubtask(task.id)}
+              onRemoveSubtask={(subId) => onRemoveSubtask(task.id, subId)}
+              onUpdateSubtask={(subId, patch) => onUpdateSubtask(task.id, subId, patch)}
+            />
+          ))}
 
-            <button
-              onClick={onAddTask}
-              className="text-xs text-matcha-400 hover:text-matcha-300 font-medium pt-1"
-            >
-              + Add task
-            </button>
-          </div>
+          {account.tasks.length > 0 && (
+            <div className="px-6 py-2 flex items-center gap-4">
+              <button
+                onClick={onAddTask}
+                className="text-xs text-zen-400 hover:text-matcha-400 transition"
+              >
+                + Add task
+              </button>
+              <button
+                onClick={() => onAddSubtask(account.tasks[account.tasks.length - 1].id)}
+                className="text-xs text-zen-400 hover:text-matcha-400 transition"
+              >
+                + Add subtask
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-// --- TaskRow ---
+// --- Task row + subtask rows beneath it ---
 
-function TaskRow({
+function TaskRowGroup({
   task,
-  onUpdate,
-  onRemove,
+  onUpdateTask,
+  onRemoveTask,
   onAddSubtask,
   onRemoveSubtask,
   onUpdateSubtask,
-  onAddTaskAfter,
-  onAddSubtaskAfter,
-  onIndentTask,
-  onPromoteSubtask,
-  dragListeners,
-  dragAttributes,
 }) {
-  const toggleCompleted = () => {
-    onUpdate((t) => ({ ...t, completed: !t.completed }));
-    logEvent('Task Status Changed', {
-      task_id: task.id,
-      field: 'completed',
-      value: !task.completed,
-    });
-  };
+  const colorCfg = getColorConfig(task.color);
+  const isDone = task.status === 'done';
 
-  const togglePriority = () => {
-    onUpdate((t) => ({ ...t, priority: !t.priority }));
-    logEvent('Task Status Changed', {
-      task_id: task.id,
-      field: 'priority',
-      value: !task.priority,
-    });
-  };
-
-  const toggleCollapsed = () =>
-    onUpdate((t) => ({ ...t, collapsed: !t.collapsed }));
-
-  const hasSubtasks = task.subtasks.length > 0;
-
-  const handleTaskKeyDown = (e) => {
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       onAddSubtask();
-    } else if (e.key === 'Tab' && !e.shiftKey) {
-      e.preventDefault();
-      onIndentTask();
-    } else if (e.key === 'Escape') {
-      e.target.blur();
     } else if (e.key === 'Backspace' && !task.title) {
+      e.preventDefault();
+      onRemoveTask();
+    }
+  };
+
+  return (
+    <>
+      {/* Task row */}
+      <div
+        className={`grid grid-cols-[1fr_120px_44px_120px_36px] gap-2 items-center px-6 py-1.5 border-t border-zen-200/50 hover:bg-zen-50 transition group ${
+          colorCfg.value ? `border-l-2 ${colorCfg.border}` : 'border-l-2 border-l-transparent'
+        }`}
+      >
+        {/* Title */}
+        <div className="flex items-center gap-2 min-w-0">
+          <EditableCell
+            value={task.title}
+            onChange={(val) => onUpdateTask((t) => ({ ...t, title: val }))}
+            onKeyDown={handleKeyDown}
+            placeholder="Task title"
+            focusId={task.id}
+            className={`text-sm ${isDone ? 'line-through text-zen-400' : 'text-zen-800'}`}
+          />
+        </div>
+
+        {/* Status */}
+        <StatusBadge
+          status={task.status}
+          onChange={(val) => {
+            onUpdateTask((t) => ({ ...t, status: val }));
+            logEvent('Task Status Changed', { task_id: task.id, status: val });
+          }}
+        />
+
+        {/* Color */}
+        <div className="flex justify-center">
+          <ColorPicker
+            color={task.color}
+            onChange={(val) => onUpdateTask((t) => ({ ...t, color: val }))}
+          />
+        </div>
+
+        {/* Assignee */}
+        <EditableCell
+          value={task.assignee}
+          onChange={(val) => {
+            onUpdateTask((t) => ({ ...t, assignee: val }));
+            if (val && !task.assignee) {
+              logEvent('Task Status Changed', { task_id: task.id, field: 'assignee', value: val });
+            }
+          }}
+          placeholder="Assignee"
+          className="text-xs text-zen-600"
+        />
+
+        {/* Actions */}
+        <div className="flex items-center gap-1 justify-end">
+          <button
+            onClick={onAddSubtask}
+            className="text-zen-300 hover:text-matcha-500 transition opacity-0 group-hover:opacity-100"
+            aria-label="Add subtask"
+          >
+            <PlusIcon />
+          </button>
+          <button
+            onClick={onRemoveTask}
+            className="text-zen-300 hover:text-red-400 transition opacity-0 group-hover:opacity-100"
+            aria-label="Delete task"
+          >
+            <XIcon />
+          </button>
+        </div>
+      </div>
+
+      {/* Subtask rows */}
+      {task.subtasks.map((sub) => (
+        <SubtaskRow
+          key={sub.id}
+          sub={sub}
+          parentColor={task.color}
+          onUpdate={(patch) => onUpdateSubtask(sub.id, patch)}
+          onRemove={() => onRemoveSubtask(sub.id)}
+        />
+      ))}
+    </>
+  );
+}
+
+// --- Subtask row ---
+
+function SubtaskRow({ sub, parentColor, onUpdate, onRemove }) {
+  const colorCfg = getColorConfig(sub.color || parentColor);
+  const isDone = sub.status === 'done';
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Backspace' && !sub.title) {
       e.preventDefault();
       onRemove();
     }
   };
 
-  const handleSubtaskKeyDown = (subId, subTitle) => (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      onAddSubtaskAfter(subId);
-    } else if (e.key === 'Tab' && e.shiftKey) {
-      e.preventDefault();
-      onPromoteSubtask(subId);
-    } else if (e.key === 'Escape') {
-      e.target.blur();
-    } else if (e.key === 'Backspace' && !subTitle) {
-      e.preventDefault();
-      onRemoveSubtask(subId);
-    }
-  };
-
   return (
-    <div className="group animate-fade-slide-in">
-      <div className="flex items-start gap-2 py-2">
-        {/* Drag handle */}
-        <button
-          {...dragListeners}
-          {...dragAttributes}
-          className="flex-shrink-0 mt-1 text-zen-300 hover:text-zen-500 transition cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"
-          aria-label="Drag to reorder"
-        >
-          <GripIcon small />
-        </button>
-
-        {/* Expand subtasks toggle */}
-        <button
-          onClick={toggleCollapsed}
-          className={`flex-shrink-0 w-4 h-4 mt-1 flex items-center justify-center text-zen-300 ${
-            hasSubtasks ? 'hover:text-zen-600' : ''
-          }`}
-          disabled={!hasSubtasks}
-          aria-label="Toggle subtasks"
-        >
-          {hasSubtasks && (
-            <svg
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              className={`w-3 h-3 transition-transform duration-200 ${
-                task.collapsed ? '' : 'rotate-90'
-              }`}
-            >
-              <path
-                fillRule="evenodd"
-                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                clipRule="evenodd"
-              />
-            </svg>
-          )}
-        </button>
-
-        {/* Completed checkbox */}
-        <input
-          type="checkbox"
-          checked={task.completed}
-          onChange={toggleCompleted}
-          className="flex-shrink-0 w-4 h-4 mt-1 rounded border-zen-300 text-matcha-500 focus:ring-matcha-500/50 cursor-pointer accent-matcha-500"
+    <div
+      className={`grid grid-cols-[1fr_120px_44px_120px_36px] gap-2 items-center px-6 py-1 border-t border-zen-200/30 hover:bg-zen-50 transition group ${
+        colorCfg.value ? `border-l-2 ${colorCfg.border}` : 'border-l-2 border-l-transparent'
+      }`}
+    >
+      {/* Title (indented) */}
+      <div className="flex items-center gap-2 min-w-0 pl-6">
+        <span className="text-zen-300 flex-shrink-0">&#8627;</span>
+        <EditableCell
+          value={sub.title}
+          onChange={(val) => onUpdate({ title: val })}
+          onKeyDown={handleKeyDown}
+          placeholder="Subtask"
+          focusId={sub.id}
+          className={`text-xs ${isDone ? 'line-through text-zen-400' : 'text-zen-600'}`}
         />
+      </div>
 
-        {/* Title */}
-        <EditableWithLinks
-          value={task.title}
-          onChange={(e) => onUpdate((t) => ({ ...t, title: e.target.value }))}
-          onKeyDown={handleTaskKeyDown}
-          placeholder="Task title"
-          focusId={task.id}
-          className={`flex-1 min-w-0 text-sm break-words px-2 py-1 -mx-1 ${
-            task.completed ? 'line-through text-zen-400' : 'text-zen-800'
-          }`}
-          inputClassName={`flex-1 min-w-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded px-2 py-1 -mx-1 ${
-            task.completed ? 'line-through text-zen-400' : 'text-zen-800'
-          }`}
+      {/* Status */}
+      <StatusBadge
+        status={sub.status}
+        onChange={(val) => onUpdate({ status: val })}
+      />
+
+      {/* Color */}
+      <div className="flex justify-center">
+        <ColorPicker
+          color={sub.color}
+          onChange={(val) => onUpdate({ color: val })}
         />
+      </div>
 
-        {/* Priority star */}
-        <button
-          onClick={togglePriority}
-          className={`flex-shrink-0 transition ${
-            task.priority
-              ? 'text-amber-500'
-              : 'text-zen-300 hover:text-amber-400'
-          }`}
-          aria-label="Toggle priority"
-        >
-          <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-            <path
-              fillRule="evenodd"
-              d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
+      {/* Empty assignee column for alignment */}
+      <span />
 
-        {/* Assignee */}
-        <input
-          value={task.assignee}
-          onChange={(e) => {
-            onUpdate((t) => ({ ...t, assignee: e.target.value }));
-            if (e.target.value && !task.assignee) {
-              logEvent('Task Status Changed', {
-                task_id: task.id,
-                field: 'assignee',
-                value: e.target.value,
-              });
-            }
-          }}
-          placeholder="Assign"
-          className="flex-shrink-0 w-20 bg-transparent text-xs text-zen-600 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded border border-transparent focus:border-zen-300 px-2 py-1.5 placeholder:text-zen-300"
-        />
-
-        {/* Add subtask */}
-        <button
-          onClick={onAddSubtask}
-          className="flex-shrink-0 text-zen-300 hover:text-matcha-500 transition opacity-0 group-hover:opacity-100"
-          aria-label="Add subtask"
-        >
-          <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-          </svg>
-        </button>
-
-        {/* Delete task */}
+      {/* Actions */}
+      <div className="flex items-center justify-end">
         <button
           onClick={onRemove}
-          className="flex-shrink-0 text-zen-300 hover:text-red-400 transition opacity-0 group-hover:opacity-100"
-          aria-label="Delete task"
+          className="text-zen-300 hover:text-red-400 transition opacity-0 group-hover:opacity-100"
+          aria-label="Delete subtask"
         >
-          <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-            <path
-              fillRule="evenodd"
-              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <XIcon size="sm" />
         </button>
       </div>
-
-      {/* Subtasks with collapse animation */}
-      <div
-        className={`grid transition-[grid-template-rows] duration-200 ease-in-out ${
-          task.collapsed || !hasSubtasks
-            ? 'grid-rows-[0fr]'
-            : 'grid-rows-[1fr]'
-        }`}
-      >
-        <div className="overflow-hidden">
-          {hasSubtasks && (
-            <div className="ml-10 border-l-2 border-zen-300 pl-4 space-y-1 mt-1">
-              {task.subtasks.map((sub) => (
-                <div
-                  key={sub.id}
-                  className="flex items-start gap-2 py-1.5 group/sub animate-fade-slide-in"
-                >
-                  <input
-                    type="checkbox"
-                    checked={sub.completed}
-                    onChange={() =>
-                      onUpdateSubtask(sub.id, { completed: !sub.completed })
-                    }
-                    className="flex-shrink-0 w-3.5 h-3.5 mt-0.5 rounded border-zen-300 text-matcha-500 focus:ring-matcha-500/50 cursor-pointer accent-matcha-500"
-                  />
-                  <EditableWithLinks
-                    value={sub.title}
-                    onChange={(e) =>
-                      onUpdateSubtask(sub.id, { title: e.target.value })
-                    }
-                    onKeyDown={handleSubtaskKeyDown(sub.id, sub.title)}
-                    placeholder="Subtask"
-                    focusId={sub.id}
-                    className={`flex-1 min-w-0 text-xs break-words px-2 py-1 -mx-1 ${
-                      sub.completed
-                        ? 'line-through text-zen-400'
-                        : 'text-zen-600'
-                    }`}
-                    inputClassName={`flex-1 min-w-0 bg-transparent text-xs focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded px-2 py-1 -mx-1 ${
-                      sub.completed
-                        ? 'line-through text-zen-400'
-                        : 'text-zen-600'
-                    }`}
-                  />
-                  <button
-                    onClick={() => onRemoveSubtask(sub.id)}
-                    className="flex-shrink-0 text-zen-300 hover:text-red-400 transition opacity-0 group-hover/sub:opacity-100"
-                    aria-label="Delete subtask"
-                  >
-                    <svg
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-3 h-3"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
     </div>
+  );
+}
+
+// --- Icons ---
+
+function XIcon({ size }) {
+  const s = size === 'sm' ? 'w-3 h-3' : 'w-3.5 h-3.5';
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className={s}>
+      <path
+        fillRule="evenodd"
+        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+      <path
+        fillRule="evenodd"
+        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+      <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+    </svg>
   );
 }

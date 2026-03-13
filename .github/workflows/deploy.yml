@@ -26,6 +26,10 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - name: Remove server-only API routes before static export
+        run: rm -rf app/api
+
       - run: npm run build
 
       - uses: actions/upload-pages-artifact@v3

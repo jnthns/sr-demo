@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { analytics } from '../../lib/amplitude';
 import {
   DndContext,
@@ -45,6 +45,7 @@ const createSubtask = (title = '') => ({
   id: generateId(),
   title,
   completed: false,
+  assignee: '',
 });
 
 const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
@@ -670,6 +671,9 @@ function TaskRow({
   dragListeners,
   dragAttributes,
 }) {
+  const taskAssigneeFocusRef = useRef('');
+  const subAssigneeFocusRef = useRef({});
+
   const toggleCompleted = () => {
     onUpdate((t) => ({ ...t, completed: !t.completed }));
     analytics.track('Task Status Changed', {
@@ -807,13 +811,18 @@ function TaskRow({
         {/* Assignee */}
         <input
           value={task.assignee}
-          onChange={(e) => {
-            onUpdate((t) => ({ ...t, assignee: e.target.value }));
-            if (e.target.value && !task.assignee) {
-              analytics.track('Task Status Changed', {
+          onFocus={() => {
+            taskAssigneeFocusRef.current = task.assignee || '';
+          }}
+          onChange={(e) => onUpdate((t) => ({ ...t, assignee: e.target.value }))}
+          onBlur={(e) => {
+            const v = e.target.value.trim();
+            const prev = (taskAssigneeFocusRef.current || '').trim();
+            if (v !== prev) {
+              analytics.track('Task Assigned', {
                 task_id: task.id,
-                field: 'assignee',
-                value: e.target.value,
+                assignee: v || null,
+                previous_assignee: prev || null,
               });
             }
           }}
@@ -867,9 +876,16 @@ function TaskRow({
                   <input
                     type="checkbox"
                     checked={sub.completed}
-                    onChange={() =>
-                      onUpdateSubtask(sub.id, { completed: !sub.completed })
-                    }
+                    onChange={() => {
+                      const next = !sub.completed;
+                      onUpdateSubtask(sub.id, { completed: next });
+                      analytics.track('Subtask Status Changed', {
+                        task_id: task.id,
+                        subtask_id: sub.id,
+                        field: 'completed',
+                        completed: next,
+                      });
+                    }}
                     className="flex-shrink-0 w-3.5 h-3.5 mt-0.5 rounded border-zen-300 text-matcha-500 focus:ring-matcha-500/50 cursor-pointer accent-matcha-500"
                   />
                   <EditableWithLinks
@@ -890,6 +906,31 @@ function TaskRow({
                         ? 'line-through text-zen-400'
                         : 'text-zen-600'
                     }`}
+                  />
+                  <input
+                    value={sub.assignee ?? ''}
+                    onFocus={() => {
+                      subAssigneeFocusRef.current[sub.id] = sub.assignee || '';
+                    }}
+                    onChange={(e) =>
+                      onUpdateSubtask(sub.id, { assignee: e.target.value })
+                    }
+                    onBlur={(e) => {
+                      const v = e.target.value.trim();
+                      const prev = (
+                        subAssigneeFocusRef.current[sub.id] || ''
+                      ).trim();
+                      if (v !== prev) {
+                        analytics.track('Subtask Assigned', {
+                          task_id: task.id,
+                          subtask_id: sub.id,
+                          assignee: v || null,
+                          previous_assignee: prev || null,
+                        });
+                      }
+                    }}
+                    placeholder="Assign"
+                    className="flex-shrink-0 w-16 bg-transparent text-xs text-zen-600 focus:outline-none focus:ring-1 focus:ring-matcha-500/50 rounded border border-transparent focus:border-zen-300 px-1.5 py-1 placeholder:text-zen-300"
                   />
                   <button
                     onClick={() => onRemoveSubtask(sub.id)}

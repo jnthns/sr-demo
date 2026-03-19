@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import * as amplitude from '@amplitude/analytics-browser';
-import { deviceId as defaultDeviceId } from '../../lib/amplitude';
+import { analytics, deviceId as defaultDeviceId } from '../../lib/amplitude';
 import PageHeading from '../components/PageHeading';
 
 const DEFAULT_API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY;
@@ -26,6 +26,16 @@ const parseJsonField = (value) => {
 };
 
 const formatIso = (timestampMs) => new Date(timestampMs).toISOString();
+
+/** Track API tester sends only (not field edits). No raw payloads or API keys. */
+const trackTesterSend = (requestType, props = {}) => {
+  if (typeof window === 'undefined') return;
+  analytics.track('Amplitude API Tester Payload Sent', {
+    request_type: requestType,
+    url: window.location.href,
+    ...props,
+  });
+};
 
 export default function AmplitudeApiTesterPage() {
   const [userId, setUserId] = useState('demo-user');
@@ -109,8 +119,19 @@ export default function AmplitudeApiTesterPage() {
         ok: true,
         message: `Identify sent at ${formatIso(time)}`
       });
+      trackTesterSend('identify', {
+        success: true,
+        user_property_keys: Object.keys(data),
+        user_property_count: Object.keys(data).length,
+      });
     } catch (error) {
       setStatusMessage('identify', { ok: false, message: error.message });
+      trackTesterSend('identify', {
+        success: false,
+        user_property_keys: Object.keys(data),
+        user_property_count: Object.keys(data).length,
+        error_message: String(error.message || error).slice(0, 200),
+      });
     }
   };
 
@@ -154,8 +175,23 @@ export default function AmplitudeApiTesterPage() {
         ok: true,
         message: `Group Identify sent at ${formatIso(time)}`
       });
+      trackTesterSend('group_identify', {
+        success: true,
+        group_type: groupType.trim(),
+        group_name: groupName.trim(),
+        group_property_keys: Object.keys(data),
+        group_property_count: Object.keys(data).length,
+      });
     } catch (error) {
       setStatusMessage('groupIdentify', { ok: false, message: error.message });
+      trackTesterSend('group_identify', {
+        success: false,
+        group_type: groupType.trim(),
+        group_name: groupName.trim(),
+        group_property_keys: Object.keys(data),
+        group_property_count: Object.keys(data).length,
+        error_message: String(error.message || error).slice(0, 200),
+      });
     }
   };
 
@@ -194,8 +230,24 @@ export default function AmplitudeApiTesterPage() {
         ok: response.ok,
         message: `HTTP API responded ${response.status}: ${text || 'OK'}`
       });
+      trackTesterSend('http_api', {
+        success: response.ok,
+        response_status: response.status,
+        amplitude_event_type: httpEventType.trim() || 'http_event_test',
+        event_property_keys: Object.keys(data),
+        event_property_count: Object.keys(data).length,
+        using_default_api_key: !apiKey.trim() || apiKey.trim() === DEFAULT_API_KEY,
+      });
     } catch (error) {
       setStatusMessage('http', { ok: false, message: error.message });
+      trackTesterSend('http_api', {
+        success: false,
+        amplitude_event_type: httpEventType.trim() || 'http_event_test',
+        event_property_keys: Object.keys(data),
+        event_property_count: Object.keys(data).length,
+        using_default_api_key: !apiKey.trim() || apiKey.trim() === DEFAULT_API_KEY,
+        error_message: String(error.message || error).slice(0, 200),
+      });
     }
   };
 
@@ -234,8 +286,24 @@ export default function AmplitudeApiTesterPage() {
         ok: response.ok,
         message: `Batch API responded ${response.status}: ${text || 'OK'}`
       });
+      trackTesterSend('batch_api', {
+        success: response.ok,
+        response_status: response.status,
+        amplitude_event_type: batchEventType.trim() || 'batch_event_test',
+        event_property_keys: Object.keys(data),
+        event_property_count: Object.keys(data).length,
+        using_default_api_key: !apiKey.trim() || apiKey.trim() === DEFAULT_API_KEY,
+      });
     } catch (error) {
       setStatusMessage('batch', { ok: false, message: error.message });
+      trackTesterSend('batch_api', {
+        success: false,
+        amplitude_event_type: batchEventType.trim() || 'batch_event_test',
+        event_property_keys: Object.keys(data),
+        event_property_count: Object.keys(data).length,
+        using_default_api_key: !apiKey.trim() || apiKey.trim() === DEFAULT_API_KEY,
+        error_message: String(error.message || error).slice(0, 200),
+      });
     }
   };
 

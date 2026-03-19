@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-import { logEvent } from "../../lib/amplitude"
+import { analytics } from "../../lib/amplitude"
 import PageHeading from '../components/PageHeading';
 
 const MarkdownRenderer = dynamic(() => import("../components/MarkdownRenderer"), {
@@ -93,7 +93,7 @@ export default function FileSearchPage() {
                 clearInterval(pollingIntervals[operationName]);
                 if (data.operation.response?.file) {
                   loadFiles(); // Reload files list
-                  logEvent('File Upload Completed', {
+                  analytics.track('File Upload Completed', {
                     store_name: selectedStore,
                     file_name: data.operation.response.file.displayName
                   });
@@ -206,7 +206,7 @@ I'll provide answers with citations from your uploaded files.`,
         setNewStoreName('');
         await loadStores();
         setSelectedStore(data.name);
-        logEvent('File Search Store Created', { store_name: data.displayName });
+        analytics.track('File Search Store Created', { store_name: data.displayName });
       } else {
         setError(data.error || 'Failed to create store');
       }
@@ -235,7 +235,7 @@ I'll provide answers with citations from your uploaded files.`,
           setSelectedStore(null);
           setFiles([]);
         }
-        logEvent('File Search Store Deleted', { store_name: storeName });
+        analytics.track('File Search Store Deleted', { store_name: storeName });
       } else {
         setError(data.error || 'Failed to delete store');
       }
@@ -341,7 +341,7 @@ I'll provide answers with citations from your uploaded files.`,
           }]);
         }
 
-        logEvent('File Upload Started', {
+        analytics.track('File Upload Started', {
           store_name: selectedStore,
           file_name: file.name,
           file_size: file.size,
@@ -426,7 +426,7 @@ I'll provide answers with citations from your uploaded files.`,
     setIsLoading(true);
     setError(null);
 
-    logEvent('File Search Query', {
+    analytics.track('File Search Query', {
       message: messageText,
       store_name: selectedStore
     });
@@ -464,7 +464,7 @@ I'll provide answers with citations from your uploaded files.`,
 
       setMessages([...newMessages, botMessage]);
 
-      logEvent('File Search Response Received', {
+      analytics.track('File Search Response Received', {
         response_length: botMessage.text.length,
         has_citations: !!data.groundingMetadata,
         usage: data.usage

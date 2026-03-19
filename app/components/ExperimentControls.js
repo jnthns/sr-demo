@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react";
-import { logEvent, trackExposure, fetchVariant } from "../../lib/amplitude";
+import { analytics, trackExposure, fetchVariant } from "../../lib/amplitude";
 
 export default function ExperimentControls() {
   const [variantInfo, setVariantInfo] = useState(null);
@@ -18,7 +18,7 @@ export default function ExperimentControls() {
       const result = await fetchVariant(userProperties);
       setVariantInfo(result);
 
-      logEvent('Experiment Fetch Triggered', {
+      analytics.track('Experiment Fetch Triggered', {
         user_properties: userProperties,
         variant: result.variant,
         success: result.success

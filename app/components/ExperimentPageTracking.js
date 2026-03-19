@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from "react";
-import { logEvent, trackExposure } from "../../lib/amplitude";
+import { analytics, trackExposure } from "../../lib/amplitude";
 
 export default function ExperimentPageTracking() {
   useEffect(() => {
@@ -12,7 +12,7 @@ export default function ExperimentPageTracking() {
       const buttonId = button.id || '';
       const isFormSubmit = buttonType === 'submit';
 
-      logEvent("Button Clicked", {
+      analytics.track("Button Clicked", {
         button_text: buttonText,
         button_id: buttonId,
         button_type: buttonType,
@@ -27,7 +27,7 @@ export default function ExperimentPageTracking() {
     };
 
     const handleInputFocus = (event) => {
-      logEvent("Form Field Focused", { 
+      analytics.track("Form Field Focused", { 
         field: event.target.name,
         field_type: event.target.type,
         label: event.target.labels?.[0]?.textContent?.trim()
@@ -35,7 +35,7 @@ export default function ExperimentPageTracking() {
     };
 
     const handleInputBlur = (event) => {
-      logEvent("Form Input Entered", { 
+      analytics.track("Form Input Entered", { 
         field: event.target.name,
         field_type: event.target.type,
         value: event.target.type === 'password' ? '[REDACTED]' : event.target.value,
@@ -51,7 +51,7 @@ export default function ExperimentPageTracking() {
         formFields[key] = key.includes('password') || key.includes('credit') ? '[REDACTED]' : value;
       });
       
-      logEvent("Form Submitted", {
+      analytics.track("Form Submitted", {
         form_id: event.target.id || 'main-form',
         fields: formFields
       });

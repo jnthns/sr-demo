@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-import { logEvent } from "../../lib/amplitude"
+import { analytics } from "../../lib/amplitude"
 import { initializeChat, clearChatHistory, handleGeminiError } from "../../lib/geminichat"
 import { chatService } from "../../lib/chatService"
 import PageHeading from '../components/PageHeading';
@@ -151,7 +151,7 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
     setIsLoading(true);
     setError(null);
     
-    logEvent('Chatbot Message Sent', { 
+    analytics.track('Chatbot Message Sent', { 
       message: messageText,
       message_length: messageText.length,
       timestamp: userMessage.timestamp
@@ -190,7 +190,7 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
         }
       }
       
-      logEvent('Chatbot Response Received', {
+      analytics.track('Chatbot Response Received', {
         response_length: botMessage.text.length,
         usage: result.usage,
         timestamp: botMessage.timestamp
@@ -211,7 +211,7 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
 
       setMessages([...newMessages, errorBotMessage]);
       
-      logEvent('Chatbot Error', {
+      analytics.track('Chatbot Error', {
         error_type: error.name,
         error_message: error.message,
         timestamp: new Date()
@@ -238,7 +238,7 @@ I'm your **AI assistant** powered by Google Gemini. How can I help?`,
     setError(null);
     setChatExpanded(false); // Reset expansion state
     
-    logEvent('Chat Cleared', { timestamp: new Date() });
+    analytics.track('Chat Cleared', { timestamp: new Date() });
   };
 
   const handleRestart = () => {

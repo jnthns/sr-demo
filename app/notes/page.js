@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { logEvent } from '../../lib/amplitude';
+import { analytics } from '../../lib/amplitude';
 import {
   DndContext,
   closestCenter,
@@ -206,18 +206,18 @@ export default function NotesPage() {
   const addAccount = () => {
     const acct = createAccount();
     setAccounts((prev) => [...prev, acct]);
-    logEvent('Account Created', { account_id: acct.id });
+    analytics.track('Account Created', { account_id: acct.id });
   };
 
   const removeAccount = (accountId) => {
     setAccounts((prev) => prev.filter((a) => a.id !== accountId));
-    logEvent('Account Deleted', { account_id: accountId });
+    analytics.track('Account Deleted', { account_id: accountId });
   };
 
   const addTask = (accountId) => {
     const task = createTask();
     updateAccount(accountId, (a) => ({ ...a, tasks: [...a.tasks, task] }));
-    logEvent('Task Created', { account_id: accountId, task_id: task.id });
+    analytics.track('Task Created', { account_id: accountId, task_id: task.id });
     focusElementById(task.id);
   };
 
@@ -264,7 +264,7 @@ export default function NotesPage() {
       const newIndex = prev.findIndex((a) => a.id === over.id);
       return arrayMove(prev, oldIndex, newIndex);
     });
-    logEvent('Account Reordered');
+    analytics.track('Account Reordered');
   };
 
   const reorderTasks = (accountId, oldIndex, newIndex) => {
@@ -272,7 +272,7 @@ export default function NotesPage() {
       ...a,
       tasks: arrayMove(a.tasks, oldIndex, newIndex),
     }));
-    logEvent('Task Reordered', { account_id: accountId });
+    analytics.track('Task Reordered', { account_id: accountId });
   };
 
   // --- Keyboard shortcut helpers ---
@@ -285,7 +285,7 @@ export default function NotesPage() {
       tasks.splice(idx + 1, 0, task);
       return { ...a, tasks };
     });
-    logEvent('Task Created', { account_id: accountId, task_id: task.id });
+    analytics.track('Task Created', { account_id: accountId, task_id: task.id });
     focusElementById(task.id);
   };
 
@@ -672,7 +672,7 @@ function TaskRow({
 }) {
   const toggleCompleted = () => {
     onUpdate((t) => ({ ...t, completed: !t.completed }));
-    logEvent('Task Status Changed', {
+    analytics.track('Task Status Changed', {
       task_id: task.id,
       field: 'completed',
       value: !task.completed,
@@ -681,7 +681,7 @@ function TaskRow({
 
   const togglePriority = () => {
     onUpdate((t) => ({ ...t, priority: !t.priority }));
-    logEvent('Task Status Changed', {
+    analytics.track('Task Status Changed', {
       task_id: task.id,
       field: 'priority',
       value: !task.priority,
@@ -810,7 +810,7 @@ function TaskRow({
           onChange={(e) => {
             onUpdate((t) => ({ ...t, assignee: e.target.value }));
             if (e.target.value && !task.assignee) {
-              logEvent('Task Status Changed', {
+              analytics.track('Task Status Changed', {
                 task_id: task.id,
                 field: 'assignee',
                 value: e.target.value,

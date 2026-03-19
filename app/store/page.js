@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { logEvent } from "../../lib/amplitude"
+import { analytics } from "../../lib/amplitude"
 import PageHeading from '../components/PageHeading';
 
 export default function StorePage() {
@@ -96,7 +96,7 @@ export default function StorePage() {
 
   // Track product list viewed on mount
   useEffect(() => {
-    logEvent('Product List Viewed', {
+    analytics.track('Product List Viewed', {
       category: 'all',
       product_ids: products.map(p => p.id)
     });
@@ -126,7 +126,7 @@ export default function StorePage() {
     
     setCart(newCart);
     
-    logEvent('Product Added', {
+    analytics.track('Product Added', {
       product_id: product.id,
       product_name: product.name,
       price: product.price,
@@ -141,7 +141,7 @@ export default function StorePage() {
     setCart(newCart);
     
     if (product) {
-      logEvent('Product Removed', {
+      analytics.track('Product Removed', {
         product_id: product.id,
         product_name: product.name
       });
@@ -163,7 +163,7 @@ export default function StorePage() {
   // Search function
   const handleSearch = (query) => {
     setSearchQuery(query);
-    logEvent('Products Searched', {
+    analytics.track('Products Searched', {
       query: query,
       results_count: filteredProducts.length
     });
@@ -172,7 +172,7 @@ export default function StorePage() {
   // Product detail functions
   const viewProduct = (product) => {
     setSelectedProduct(product);
-    logEvent('Product Clicked', {
+    analytics.track('Product Clicked', {
       product_id: product.id,
       product_name: product.name,
       price: product.price,
@@ -180,7 +180,7 @@ export default function StorePage() {
     });
     
     // Track product viewed when modal opens
-    logEvent('Product Viewed', {
+    analytics.track('Product Viewed', {
       product_id: product.id,
       product_name: product.name,
       price: product.price,
@@ -196,7 +196,7 @@ export default function StorePage() {
   const startCheckout = () => {
     setCheckoutStep(1);
     setShowCart(false);
-    logEvent('Checkout Started', {
+    analytics.track('Checkout Started', {
       cart_value: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
       item_count: cart.reduce((sum, item) => sum + item.quantity, 0),
       product_ids: cart.map(item => item.id)
@@ -205,7 +205,7 @@ export default function StorePage() {
 
   const nextCheckoutStep = () => {
     setCheckoutStep(prev => prev + 1);
-    logEvent('Checkout Step Completed', {
+    analytics.track('Checkout Step Completed', {
       step: checkoutStep,
       step_name: getCheckoutStepName(checkoutStep)
     });
@@ -227,7 +227,7 @@ export default function StorePage() {
     cart.forEach(item => {
       const itemRevenue = item.price * item.quantity;
       
-      logEvent('Purchase Completed', {
+      analytics.track('Purchase Completed', {
         // Revenue properties (with $ prefix) as per Amplitude documentation
         $revenue: itemRevenue,           // Total revenue for this line item (required for Revenue LTV chart)
         $price: item.price,              // Price per unit
@@ -244,7 +244,7 @@ export default function StorePage() {
 
     // Track Purchase Completed event with order-level summary
     // Include $revenue for the total order to ensure it appears in Revenue LTV charts
-    logEvent('Purchase Completed', {
+    analytics.track('Purchase Completed', {
       // Revenue properties for the total order
       $revenue: totalRevenue,        // Total revenue for the entire order (required for Revenue LTV chart)
       $currency: 'USD',               // ISO 4217 currency code
@@ -279,7 +279,7 @@ export default function StorePage() {
   // Track checkout step viewed
   useEffect(() => {
     if (checkoutStep > 0) {
-      logEvent('Checkout Step Viewed', {
+      analytics.track('Checkout Step Viewed', {
         step: checkoutStep,
         step_name: getCheckoutStepName(checkoutStep)
       });
